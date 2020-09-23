@@ -1,0 +1,1 @@
+Tampering Demo application. Debug prints on MAIN UART

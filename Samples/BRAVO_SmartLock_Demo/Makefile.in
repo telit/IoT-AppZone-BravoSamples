@@ -1,0 +1,7 @@
+CPPFLAGS += -I azx/hdr
+OBJS += $(patsubst %.c,%.o,$(wildcard azx/src/*.c))
+CPPFLAGS += -I src/demo_utils
+OBJS += $(patsubst %.c,%.o,$(wildcard src/demo_utils/*.c))
+CPPFLAGS += -I BOSCH/BHI160/firmware -I BOSCH/BHI160/inc
+OBJS += $(patsubst %.c,%.o,$(wildcard BOSCH/BHI160/src/*.c))
+CPPFLAGS += -Wall -Werror -Wextra -Wunreachable-code -Wno-missing-field-initializers -Wno-format
