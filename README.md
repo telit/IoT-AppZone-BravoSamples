@@ -6,7 +6,7 @@ Telit IoT AppZone Sample Apps For Bravo Board - leverage onboard sensors to OneE
 This repository contains Telit IoT AppZone C sample apps dedicated for Bravo Board, showing how to access data from sensors and publish them with OneEdge
 
 ## Structure
-Each sample has its own subfolder, containing all the sample required files. The minimum firmware version to build the samples is 30.00.xx8
+All samples are inside `Samples` folder, where each one has its own subfolder, containing all the required files. **The minimum firmware version to build the samples is 30.00.xx8**.
 
 
 ## Usage
