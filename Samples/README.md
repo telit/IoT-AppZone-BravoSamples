@@ -101,6 +101,16 @@ To load it, use
 
 And at prompt, send the file content in raw mode. 
 
+#### Prerequisites on the OneEdge Portal
+
+This application requires the **object_26247.xml** content to be stored in your OneEdge organization object registry. The latter can be accessed from the link https://<server_url>/lwm2m/object_registry
+where <server_url> could be for example `portal-dev.telit.com`. open the xml file in a notepad tool, select all the content and copy it. Then, in the object registry webpage, press "New Object" button on the right and paste the content of the xml file, then press Add button.
+
+Now from Developer webpage, go in **Thing Definitions** page from the list on the left and press `Import` button on the right. Press `Attach File` and provide `json/bravo_SmartLock_thing_def.json` from the project root, then press `Import`.
+
+Again from the Developer webpage, select **Device Profiles**, `Import` button, `Attach File` and provide `json/bravo_SmartLock_device_profile.json`, then press `Import`.
+
+Lastly, from the Developer webpage, select **Triggers**, `Actions` menu on the right, `Import` , `Attach File` and provide `json/bravo_SmartLock_triggers.json`, then press `Import`. Now open the trigger **bravo_SmartLockDemo_state_trigger** by pressing the View button (the eye icon on the left) and be sure to press the `play` button, and that the trigger status is 'started'.
 
 #### Calibration
 At application startup, the board red LED will turn ON. After it turns OFF, move the board to perform a door open movement. Wait 3 seconds, then perform a door close movement.
@@ -139,6 +149,17 @@ To load it, use
 
 And at prompt, send the file content in raw mode. 
 
+#### Prerequisites on the OneEdge Portal
+
+This application requires the **object_26242.xml** content to be stored in your OneEdge organization object registry. The latter can be accessed from the link https://<server_url>/lwm2m/object_registry
+where <server_url> could be for example `portal-dev.telit.com`. open the xml file in a notepad tool, select all the content and copy it. Then, in the object registry webpage, press "New Object" button on the right and paste the content of the xml file, then press Add button.
+
+Now from Developer webpage, go in **Thing Definitions** page from the list on the left and press `Import` button on the right. Press `Attach File` and provide `json/bravo_TamperDemo_thing_def.json` from the project root, then press `Import`.
+
+Again from the Developer webpage, select **Device Profiles**, `Import` button, `Attach File` and provide `json/bravo_TamperDemo_device_profile.json`, then press `Import`.
+
+Lastly, from the Developer webpage, select **Triggers**, `Actions` menu on the right, `Import` , `Attach File` and provide `json/bravo_TamperDemo_triggers.json`, then press `Import`. Now open the trigger **bravo_TamperDemo_state_trigger** by pressing the View button (the eye icon on the left) and be sure to press the `play` button, and that the trigger status is 'started'.
+
 ---
 
 
@@ -160,7 +181,7 @@ Tampering Demo application. Debug prints on **MAIN UART**
 
 ---
 
-#### Prerequisites
+#### Prerequisites on the module
 
 This application requires the file **object_26251.xml** (provided) to be stored into module's `/mod/` folder, along with the application binary itself.
 
@@ -169,6 +190,16 @@ To load it, use
 `AT#M2MWRITE=/mod/object_26251.xml,1971`
 
 And at prompt, send the file content in raw mode. 
+
+#### Prerequisites on the OneEdge Portal
+
+This application requires the **object_26251.xml** content to be stored in your OneEdge organization object registry. The latter can be accessed from the link https://<server_url>/lwm2m/object_registry
+where <server_url> could be for example `portal-dev.telit.com`. open the xml file in a notepad tool, select all the content and copy it. Then, in the object registry webpage, press "New Object" button on the right and paste the content of the xml file, then press Add button.
+
+Now from Developer webpage, go in **Thing Definitions** page from the list on the left and press `Import` button on the right. Press `Attach File` and provide `json/bravo_EnvironmentalDemo_thing_def.json` from the project root, then press `Import`.
+
+Again from the Developer webpage, select **Device Profiles**, `Import` button, `Attach File` and provide `json/bravo_EnvironmentalDemo_device_profile.json`, then press `Import`.
+
 
 ** External Libraries **
 
@@ -209,6 +240,16 @@ To load it, use
 `AT#M2MWRITE=/mod/object_26250.xml,2249`
 
 And at prompt, send the file content in raw mode. 
+
+#### Prerequisites on the OneEdge Portal
+
+This application requires the **object_26250.xml** content to be stored in your OneEdge organization object registry. The latter can be accessed from the link https://<server_url>/lwm2m/object_registry
+where <server_url> could be for example `portal-dev.telit.com`. open the xml file in a notepad tool, select all the content and copy it. Then, in the object registry webpage, press "New Object" button on the right and paste the content of the xml file, then press Add button.
+
+Now from Developer webpage, go in **Thing Definitions** page from the list on the left and press `Import` button on the right. Press `Attach File` and provide `json/bravo_3D-RotationDemo_thing_def.json` from the project root, then press `Import`.
+
+Again from the Developer webpage, select **Device Profiles**, `Import` button, `Attach File` and provide `json/bravo_3D-RotationDemo_device_profile.json`, then press `Import`.
+
 
 ---
 
