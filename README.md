@@ -1,4 +1,4 @@
-# IoT-AppZone-Bravo-Samples
+# IoT-AppZone-BravoSamples
 Telit IoT AppZone Sample Apps For Bravo Board - leverage onboard sensors to OneEdge portal
 
 ## Abstract
