@@ -34,7 +34,7 @@
   <td id="projectlogo"><img alt="Logo" src="telit-logo.png"/></td>
   <td id="projectalign" style="padding-left: 2em;">
    <div id="projectname">AZX (AppZone eXtensions) documentation
-   &#160;<span id="projectnumber">1.0.4</span>
+   &#160;<span id="projectnumber">1.0.5</span>
    </div>
    <div id="projectbrief">A set of companion utilities that make AZ development easier</div>
   </td>
@@ -105,14 +105,14 @@ $(document).ready(function(){initNavTree('group__log_conf.html','');});
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
 <tr class="memitem:gae9fa7be40e4fcae6093707def57f82a5"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__log_conf.html#gae9fa7be40e4fcae6093707def57f82a5">AZX_LOG_LEVEL_E</a> { <br />
-&#160;&#160;<a class="el" href="group__log_conf.html#ggae9fa7be40e4fcae6093707def57f82a5a8f609b972c7fd17cec42b2c216dc68b4">AZX_LOG_LEVEL_NONE</a> = 0, 
-<a class="el" href="group__log_conf.html#ggae9fa7be40e4fcae6093707def57f82a5adc5cc122c3a06700e09e4c6d1cc17497">AZX_LOG_LEVEL_TRACE</a> = 1, 
+&#160;&#160;<a class="el" href="group__log_conf.html#ggae9fa7be40e4fcae6093707def57f82a5adc5cc122c3a06700e09e4c6d1cc17497">AZX_LOG_LEVEL_TRACE</a> = 1, 
 <a class="el" href="group__log_conf.html#ggae9fa7be40e4fcae6093707def57f82a5aa77afa2490f92d58d965e30ce97c8048">AZX_LOG_LEVEL_DEBUG</a> = 2, 
 <a class="el" href="group__log_conf.html#ggae9fa7be40e4fcae6093707def57f82a5a2bdb3bd46fb4a347265f0c966ded4f25">AZX_LOG_LEVEL_INFO</a> = 3, 
+<a class="el" href="group__log_conf.html#ggae9fa7be40e4fcae6093707def57f82a5a0d4c7c18f82729850d7a1c3e35e2f0b8">AZX_LOG_LEVEL_WARN</a> = 4, 
 <br />
-&#160;&#160;<a class="el" href="group__log_conf.html#ggae9fa7be40e4fcae6093707def57f82a5a0d4c7c18f82729850d7a1c3e35e2f0b8">AZX_LOG_LEVEL_WARN</a> = 4, 
-<a class="el" href="group__log_conf.html#ggae9fa7be40e4fcae6093707def57f82a5acc52fcbd7aa2088fe583a11661b4abf2">AZX_LOG_LEVEL_ERROR</a> = 5, 
-<a class="el" href="group__log_conf.html#ggae9fa7be40e4fcae6093707def57f82a5a51671d346b1e7d44f8993fa9d2ca174c">AZX_LOG_LEVEL_CRITICAL</a> = 6
+&#160;&#160;<a class="el" href="group__log_conf.html#ggae9fa7be40e4fcae6093707def57f82a5acc52fcbd7aa2088fe583a11661b4abf2">AZX_LOG_LEVEL_ERROR</a> = 5, 
+<a class="el" href="group__log_conf.html#ggae9fa7be40e4fcae6093707def57f82a5a51671d346b1e7d44f8993fa9d2ca174c">AZX_LOG_LEVEL_CRITICAL</a> = 6, 
+<a class="el" href="group__log_conf.html#ggae9fa7be40e4fcae6093707def57f82a5a8f609b972c7fd17cec42b2c216dc68b4">AZX_LOG_LEVEL_NONE</a> = 0x7F
 <br />
  }</td></tr>
 <tr class="memdesc:gae9fa7be40e4fcae6093707def57f82a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Logging levels.  <a href="group__log_conf.html#gae9fa7be40e4fcae6093707def57f82a5">More...</a><br /></td></tr>
@@ -178,9 +178,7 @@ Functions</h2></td></tr>
 
 <p>Logging levels. </p>
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ggae9fa7be40e4fcae6093707def57f82a5a8f609b972c7fd17cec42b2c216dc68b4"></a>AZX_LOG_LEVEL_NONE&#160;</td><td class="fielddoc"><p>Do not print anything </p>
-</td></tr>
-<tr><td class="fieldname"><a id="ggae9fa7be40e4fcae6093707def57f82a5adc5cc122c3a06700e09e4c6d1cc17497"></a>AZX_LOG_LEVEL_TRACE&#160;</td><td class="fielddoc"><p>Prints every message, adds a "TRACE" at the beginning of the message </p>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ggae9fa7be40e4fcae6093707def57f82a5adc5cc122c3a06700e09e4c6d1cc17497"></a>AZX_LOG_LEVEL_TRACE&#160;</td><td class="fielddoc"><p>Prints every message, adds a "TRACE" at the beginning of the message </p>
 </td></tr>
 <tr><td class="fieldname"><a id="ggae9fa7be40e4fcae6093707def57f82a5aa77afa2490f92d58d965e30ce97c8048"></a>AZX_LOG_LEVEL_DEBUG&#160;</td><td class="fielddoc"><p>Prints most of the messages, adds a "DEBUG" at the beginning of the message </p>
 </td></tr>
@@ -191,6 +189,8 @@ Functions</h2></td></tr>
 <tr><td class="fieldname"><a id="ggae9fa7be40e4fcae6093707def57f82a5acc52fcbd7aa2088fe583a11661b4abf2"></a>AZX_LOG_LEVEL_ERROR&#160;</td><td class="fielddoc"><p>like DEBUG, but adds an "ERROR" at the beginning of the message </p>
 </td></tr>
 <tr><td class="fieldname"><a id="ggae9fa7be40e4fcae6093707def57f82a5a51671d346b1e7d44f8993fa9d2ca174c"></a>AZX_LOG_LEVEL_CRITICAL&#160;</td><td class="fielddoc"><p>like DEBUG, but adds an "CRITICAL" at the beginning of the message </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ggae9fa7be40e4fcae6093707def57f82a5a8f609b972c7fd17cec42b2c216dc68b4"></a>AZX_LOG_LEVEL_NONE&#160;</td><td class="fielddoc"><p>Do not print anything </p>
 </td></tr>
 </table>
 

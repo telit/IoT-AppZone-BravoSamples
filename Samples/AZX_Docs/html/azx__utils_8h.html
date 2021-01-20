@@ -34,7 +34,7 @@
   <td id="projectlogo"><img alt="Logo" src="telit-logo.png"/></td>
   <td id="projectalign" style="padding-left: 2em;">
    <div id="projectname">AZX (AppZone eXtensions) documentation
-   &#160;<span id="projectnumber">1.0.4</span>
+   &#160;<span id="projectnumber">1.0.5</span>
    </div>
    <div id="projectbrief">A set of companion utilities that make AZ development easier</div>
   </td>
@@ -134,16 +134,16 @@ Functions</h2></td></tr>
 <tr class="memitem:a079fc61e9774e7c7b178ddcc67617a0f"><td class="memItemLeft" align="right" valign="top">const CHAR *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="azx__utils_8h.html#a079fc61e9774e7c7b178ddcc67617a0f">azx_hex_dump</a> (const void *data, UINT32 len)</td></tr>
 <tr class="memdesc:a079fc61e9774e7c7b178ddcc67617a0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dumps HEX data to string.  <a href="azx__utils_8h.html#a079fc61e9774e7c7b178ddcc67617a0f">More...</a><br /></td></tr>
 <tr class="separator:a079fc61e9774e7c7b178ddcc67617a0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8fb8f6f485efbdbc31fc02942faf3a89"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="azx__utils_8h.html#a8fb8f6f485efbdbc31fc02942faf3a89">azx_reboot_now</a> ()</td></tr>
-<tr class="memdesc:a8fb8f6f485efbdbc31fc02942faf3a89"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reboots the modem straight away.  <a href="azx__utils_8h.html#a8fb8f6f485efbdbc31fc02942faf3a89">More...</a><br /></td></tr>
-<tr class="separator:a8fb8f6f485efbdbc31fc02942faf3a89"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae6a6a38c2fdd6b84d9ef00b88690c97d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="azx__utils_8h.html#ae6a6a38c2fdd6b84d9ef00b88690c97d">azx_shutdown_now</a> ()</td></tr>
-<tr class="memdesc:ae6a6a38c2fdd6b84d9ef00b88690c97d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Shuts the modem down straight away.  <a href="azx__utils_8h.html#ae6a6a38c2fdd6b84d9ef00b88690c97d">More...</a><br /></td></tr>
-<tr class="separator:ae6a6a38c2fdd6b84d9ef00b88690c97d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a75795b5fabfb2be85fc105df383a82bf"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="azx__utils_8h.html#a75795b5fabfb2be85fc105df383a82bf">azx_reboot_now</a> (void)</td></tr>
+<tr class="memdesc:a75795b5fabfb2be85fc105df383a82bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reboots the modem straight away.  <a href="azx__utils_8h.html#a75795b5fabfb2be85fc105df383a82bf">More...</a><br /></td></tr>
+<tr class="separator:a75795b5fabfb2be85fc105df383a82bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeaea36b3c4e80ad8a22f172aa36542df"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="azx__utils_8h.html#aeaea36b3c4e80ad8a22f172aa36542df">azx_shutdown_now</a> (void)</td></tr>
+<tr class="memdesc:aeaea36b3c4e80ad8a22f172aa36542df"><td class="mdescLeft">&#160;</td><td class="mdescRight">Shuts the modem down straight away.  <a href="azx__utils_8h.html#aeaea36b3c4e80ad8a22f172aa36542df">More...</a><br /></td></tr>
+<tr class="separator:aeaea36b3c4e80ad8a22f172aa36542df"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Various helpful utilities. </p>
-<dl class="section version"><dt>Version</dt><dd>1.0.0 </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>1.0.1 </dd></dl>
 <dl class="section user"><dt>Dependencies</dt><dd>azx_log </dd></dl>
 <dl class="section author"><dt>Author</dt><dd>Ioannis Demetriou </dd>
 <dd>
@@ -236,8 +236,8 @@ Sorin Basca </dd></dl>
 
 </div>
 </div>
-<a id="a8fb8f6f485efbdbc31fc02942faf3a89"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8fb8f6f485efbdbc31fc02942faf3a89">&#9670;&nbsp;</a></span>azx_reboot_now()</h2>
+<a id="a75795b5fabfb2be85fc105df383a82bf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a75795b5fabfb2be85fc105df383a82bf">&#9670;&nbsp;</a></span>azx_reboot_now()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -245,6 +245,7 @@ Sorin Basca </dd></dl>
         <tr>
           <td class="memname">void azx_reboot_now </td>
           <td>(</td>
+          <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
@@ -257,8 +258,8 @@ Sorin Basca </dd></dl>
 
 </div>
 </div>
-<a id="ae6a6a38c2fdd6b84d9ef00b88690c97d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae6a6a38c2fdd6b84d9ef00b88690c97d">&#9670;&nbsp;</a></span>azx_shutdown_now()</h2>
+<a id="aeaea36b3c4e80ad8a22f172aa36542df"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeaea36b3c4e80ad8a22f172aa36542df">&#9670;&nbsp;</a></span>azx_shutdown_now()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -266,6 +267,7 @@ Sorin Basca </dd></dl>
         <tr>
           <td class="memname">void azx_shutdown_now </td>
           <td>(</td>
+          <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>

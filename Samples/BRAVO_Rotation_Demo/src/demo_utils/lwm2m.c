@@ -309,6 +309,21 @@ uint8_t oneedge_init( INT32 obj_id )
     return -1;
   }
 
+
+
+  AZX_LOG_DEBUG("Waiting LWM2M Registering (120 seconds timeout)...\r\n");
+  osRes = m2mb_os_ev_get(lwm2m_evHandle, EV_LWM2M_SRV_REG_BIT, M2MB_OS_EV_GET_ANY_AND_CLEAR, &curEvBits, M2MB_OS_MS2TICKS(120000));
+  if(osRes != M2MB_OS_SUCCESS)
+  {
+    AZX_LOG_ERROR("LWM2M Register timeout!\r\n");
+    m2mb_os_ev_deinit( lwm2m_evHandle );
+
+    m2mb_lwm2m_disable(lwm2mHandle);
+    azx_sleep_ms(2000);
+    m2mb_lwm2m_deinit(lwm2mHandle);
+    return -1;
+  }
+
   azx_sleep_ms(1000);
   
   /*new object instance information*/
@@ -325,19 +340,6 @@ uint8_t oneedge_init( INT32 obj_id )
     AZX_LOG_ERROR( "m2mb_lwm2m_newinst returned error %d\r\n", retVal );
     m2mb_os_ev_deinit( lwm2m_evHandle );
     m2mb_lwm2m_deinit( lwm2mHandle );
-    return -1;
-  }
-
-  AZX_LOG_DEBUG("Waiting LWM2M Registering (120 seconds timeout)...\r\n");
-  osRes = m2mb_os_ev_get(lwm2m_evHandle, EV_LWM2M_SRV_REG_BIT, M2MB_OS_EV_GET_ANY_AND_CLEAR, &curEvBits, M2MB_OS_MS2TICKS(120000));
-  if(osRes != M2MB_OS_SUCCESS)
-  {
-    AZX_LOG_ERROR("LWM2M Register timeout!\r\n");
-    m2mb_os_ev_deinit( lwm2m_evHandle );
-
-    m2mb_lwm2m_disable(lwm2mHandle);
-    azx_sleep_ms(2000);
-    m2mb_lwm2m_deinit(lwm2mHandle);
     return -1;
   }
 

@@ -1,5 +1,5 @@
-/*    Copyright (C) Telit Communications S.p.A. Italy All Rights Reserved.    */
-/*     See LICENSE file in the project root for full license information.     */
+/*Copyright (C) 2020 Telit Communications S.p.A. Italy - All Rights Reserved.*/
+/*    See LICENSE file in the project root for full license information.     */
 
 #include <string.h>
 #include <stdio.h>
@@ -43,24 +43,26 @@ end:
   return buff;
 }
 
-void azx_reboot_now()
+void azx_reboot_now(void)
 {
   M2MB_POWER_HANDLE h = NULL;
 
   if(M2MB_RESULT_SUCCESS == m2mb_power_init(&h, NULL, NULL))
   {
-    AZX_LOG_ERROR("It's dead, Jim!\r\n");
+    AZX_LOG_DEBUG("It's dead, Jim!\r\n");
+    AZX_LOG_INFO("Rebooting device\r\n");
     m2mb_power_reboot(h);
   }
 }
 
-void azx_shutdown_now()
+void azx_shutdown_now(void)
 {
   M2MB_POWER_HANDLE h = NULL;
 
   if(M2MB_RESULT_SUCCESS == m2mb_power_init(&h, NULL, NULL))
   {
-    AZX_LOG_ERROR("It's dead, Jim!\r\n");
+    AZX_LOG_DEBUG("It's dead, Jim!\r\n");
+    AZX_LOG_INFO("Shutting down device\r\n");
     m2mb_power_shutdown(h);
   }
 }

@@ -1,10 +1,11 @@
-/*    Copyright (C) Telit Communications S.p.A. Italy All Rights Reserved.    */
-/*     See LICENSE file in the project root for full license information.     */
+/*Copyright (C) 2020 Telit Communications S.p.A. Italy - All Rights Reserved.*/
+/*    See LICENSE file in the project root for full license information.     */
+
 #ifndef HDR_AZX_LOG_H_
 #define HDR_AZX_LOG_H_
 /**
  * @file azx_log.h
- * @version 1.0.2
+ * @version 1.0.5
  * @dependencies 
  * @author Fabio Pintus
  * @author Ioannis Demetriou
@@ -39,13 +40,13 @@
  */
 typedef enum
 {
-  AZX_LOG_LEVEL_NONE     = 0, /**< Do not print anything */
-  AZX_LOG_LEVEL_TRACE    = 1, /**< Prints every message, adds a "TRACE" at the beginning of the message*/
-  AZX_LOG_LEVEL_DEBUG    = 2, /**< Prints most of the messages, adds a "DEBUG" at the beginning of the message*/
-  AZX_LOG_LEVEL_INFO     = 3, /**< print the message only, without any additional info */
-  AZX_LOG_LEVEL_WARN     = 4, /**< like DEBUG, but adds a "WARNING" at the beginning of the message. */
-  AZX_LOG_LEVEL_ERROR    = 5, /**< like DEBUG, but adds an "ERROR" at the beginning of the message */
-  AZX_LOG_LEVEL_CRITICAL = 6, /**< like DEBUG, but adds an "CRITICAL" at the beginning of the message */
+  AZX_LOG_LEVEL_TRACE    = 1,    /**< Prints every message, adds a "TRACE" at the beginning of the message*/
+  AZX_LOG_LEVEL_DEBUG    = 2,    /**< Prints most of the messages, adds a "DEBUG" at the beginning of the message*/
+  AZX_LOG_LEVEL_INFO     = 3,    /**< print the message only, without any additional info */
+  AZX_LOG_LEVEL_WARN     = 4,    /**< like DEBUG, but adds a "WARNING" at the beginning of the message. */
+  AZX_LOG_LEVEL_ERROR    = 5,    /**< like DEBUG, but adds an "ERROR" at the beginning of the message */
+  AZX_LOG_LEVEL_CRITICAL = 6,    /**< like DEBUG, but adds an "CRITICAL" at the beginning of the message */
+  AZX_LOG_LEVEL_NONE     = 0x7F, /**< Do not print anything */
 } AZX_LOG_LEVEL_E;
 
 
@@ -207,5 +208,38 @@ void azx_log_setLevel(AZX_LOG_LEVEL_E level);
  *     AZX_LOG_LEVEL_E level = azx_log_get_log_level();
  */
 AZX_LOG_LEVEL_E azx_log_getLevel(void);
+
+/**
+ * @brief Gets the logging component to output to a file.
+ *
+ * Once this is called all the logs will be sent to a named file. The file will be appended to, so
+ * existing logs there will not be removed.
+ *
+ * Logs will continue to be sent to USB/UART if that is so configured.
+ *
+ * Only one file can be used at the same time, so calling this again with a new filename means that
+ * all logs will go to the new file instead of the old one.
+ *
+ * The logging can be configured to be done in a circular way by setting circular_chunks to a value
+ * greater than 0. Each chunk will have at most max_size_kb KB.
+ *
+ * @param filename The name of the file to log to. If NULL, this function does nothing.
+ * @param circular_chunks The number of chunks to store circularly (apart from the original one).
+ * @param min_level The minimum level of the logs to be stored.
+ * @param max_size_kb The maximum size in KB of each size of the log file. Once the file reaches
+ * that limit, no further logging will be made to it.
+ *
+ * @return TRUE if the file can be created and opened, FALSE otherwise
+ */
+BOOLEAN azx_log_send_to_file(const CHAR* filename, UINT32 circular_chunks,
+    AZX_LOG_LEVEL_E min_level, UINT32 max_size_kb);
+
+/**
+ * @brief Flushes any outstanding logs to the file.
+ *
+ * Without calling this, there is no guarantee of when the logs will be written to the filesystem.
+ * It may take longer due to caching.
+ */
+void azx_log_flush_to_file(void);
 
 #endif /* HDR_AZX_LOG_H_ */
