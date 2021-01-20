@@ -1,5 +1,5 @@
-/*Copyright (C) 2020 Telit Communications S.p.A. Italy - All Rights Reserved.*/
-/*    See LICENSE file in the project root for full license information.     */
+/*    Copyright (C) Telit Communications S.p.A. Italy All Rights Reserved.    */
+/*     See LICENSE file in the project root for full license information.     */
 
 /* Include files =============================================================*/
 
@@ -12,17 +12,13 @@
 #include "m2mb_usb.h"
 #include "m2mb_uart.h"
 
-#include "m2mb_fs_posix.h"
-#include "m2mb_fs_stdio.h"
-#include "m2mb_rtc.h"
-
 #include "app_cfg.h"
 #include "azx_log.h"
 
 /* Local defines =============================================================*/
 #define USB_CH_MAX 3
 #define LOG_BUFFER_SIZE 2048
-#define MAX_FILE_LOG_CACHE 10000
+
 
 #define NO_COLOUR "\033[0m"
 #define BOLD      "\033[1m"
@@ -70,15 +66,6 @@
     ); \
     break
 
-#define LOG_FILE_PREFIX(tag) \
-    case AZX_LOG_LEVEL_##tag: \
-      offset = snprintf(log_buffer, LOG_BUFFER_SIZE, \
-          prefix_fmt_file, get_date_time(), \
-          ((now / 10) % 100), #tag, \
-          get_file_title(file), line \
-      ); \
-    break
-
 /* Local typedefs ============================================================*/
 /* Local statics =============================================================*/
 static struct
@@ -89,49 +76,19 @@ static struct
   INT32 ch_fd;
   BOOLEAN colouredLogs;
   M2MB_OS_SEM_HANDLE CSSemHandle;
-} log_cfg = {/*.isInit*/ FALSE, /*.level*/ AZX_LOG_LEVEL_NONE, /*.channel*/ AZX_LOG_TO_MAX, /*.ch_fd */  -1, /*.colouredLogs*/ FALSE, /*.CSSemHandle */  NULL};
+} log_cfg = {.isInit=FALSE, .level=AZX_LOG_LEVEL_NONE, .channel=AZX_LOG_TO_MAX, .ch_fd = -1, .colouredLogs=FALSE, .CSSemHandle = NULL};
 
 
 
 static CHAR log_buffer[LOG_BUFFER_SIZE] = { 0 };
 static CHAR task_name[64];
-static CHAR dateTime[32] = { 0 };
 
-static struct
-{
-  M2MB_FILE_T* fd;
-  CHAR name[32];
-  CHAR current_name[40];
-  UINT32 circular_chunks;
-  UINT32 max_size_kb;
-  AZX_LOG_LEVEL_E min_level;
-  UINT32 cache_idx;
-  CHAR cache[MAX_FILE_LOG_CACHE];
-} logFile = {
-  /*.fd */
-      0,
-  /*.name */
-  { 0 },
-  /*.current_name */
-  { 0 },
-  /*.circular_chunks */
-  0,
-  /*.max_size_kb */
-  0,
-  /*.min_level */
-  AZX_LOG_LEVEL_CRITICAL,
-  /*.cache_idx */
-  0,
-  /*.cache */
-  { 0 }
-};
 
 
 static const CHAR* prefix_fmt_colour = "[%s%-5s%s] %3.2f  " CYAN "%s" NO_COLOUR
     ":" BOLD CYAN "%d" NO_COLOUR
     " - %s{" BOLD WHITE "%s" NO_COLOUR "}$ ";
 static const CHAR* prefix_fmt_no_colour = "[%s%-5s%s] %3.2f  %s:%d - %s{%s}$ ";
-static const CHAR* prefix_fmt_file = "%s.%.2u [%-5s] %s:%d ";
 
 
 /* Local function prototypes =================================================*/
@@ -174,13 +131,6 @@ static INT32  log_print_to_USB (const CHAR *path, const CHAR *message );
 static UINT32 get_uptime(void);
 static const char* get_file_title(const CHAR* path);
 static char* get_current_task_name(CHAR *name);
-static BOOLEAN check_file_size(const CHAR* filename, UINT32 max_size_kb);
-static void flush_log_to_file();
-static void file_log_or_cache(const CHAR* buffer);
-static const CHAR* get_next_log_filename(const CHAR* filename,
-    UINT32 circular_chunks, UINT32 max_size_kb);
-static BOOLEAN rotate_log_files(const CHAR* filename, UINT32 circular_chunks);
-static const char* get_date_time();
 
 /* Static functions ==========================================================*/
 
@@ -301,8 +251,6 @@ static UINT32 get_uptime(void)
 }
 
 
-static CHAR fileTitle[12] = "";
-
 /*-----------------------------------------------------------------------------------------------*/
 /*!
   \brief Removes the file path from the provided path, leaving only filename
@@ -315,27 +263,15 @@ static CHAR fileTitle[12] = "";
 static const char* get_file_title(const CHAR* path)
 {
   const CHAR* p = path;
-  const CHAR* start = path;
-  const CHAR* end = path;
 
   while (*p) {
     if (*p == '/' || *p == '\\') {
-      start = p + 1;
-    }
-
-    if(*p == '.') {
-      end = p;
+      return p + 1;
     }
 
     p++;
   }
-
-  if(end <= start) {
-    end = p;
-  }
-
-  snprintf(fileTitle, sizeof(fileTitle), "%.*s", (INT32)(end - start), start);
-  return fileTitle;
+  return path;
 }
 
 
@@ -363,29 +299,6 @@ static char* get_current_task_name(CHAR *name)
     strcpy(name, (CHAR*)out);
     return name;
   }
-}
-
-static const char* get_date_time(void)
-{
-  INT32 fd = m2mb_rtc_open( "/dev/rtc0", 0 );
-  M2MB_RTC_TIME_T ts = { 0 };
-  if(fd == -1)
-  {
-    dateTime[0] = '\0';
-    return dateTime;
-  }
-
-  if(-1 == m2mb_rtc_ioctl( fd, M2MB_RTC_IOCTL_GET_SYSTEM_TIME, &ts ))
-  {
-    m2mb_rtc_close( fd );
-    dateTime[0] = '\0';
-    return dateTime;
-  }
-  m2mb_rtc_close( fd );
-  snprintf(dateTime, sizeof(dateTime), "%02u-%02u %02u:%02u:%02u",
-      ts.mon, ts.day,
-      ts.hour, ts.min, ts.sec);
-  return dateTime;
 }
 
 /* Global functions ==========================================================*/
@@ -573,210 +486,8 @@ INT32 azx_log_formatted(AZX_LOG_LEVEL_E level,
     /* Print the message on the selected output stream */
     sent = log_base_function(log_buffer);
 
-    if(logFile.fd && level >= logFile.min_level)
-    {
-      if(!check_file_size(logFile.current_name, logFile.max_size_kb))
-      {
-        /* Log limit reached, so we'll need to open the next file in the rotation. Log in the file
-         * that this limit is reached and then get the next filename */
-        m2mb_fs_fputs("=== Log file size limit reached\r\n", logFile.fd);
-        m2mb_fs_fclose(logFile.fd);
-        logFile.fd = 0;
-
-        snprintf(logFile.current_name, sizeof(logFile.current_name), "%s",
-            get_next_log_filename(logFile.name, logFile.circular_chunks,
-              logFile.max_size_kb));
-
-        if(logFile.current_name[0] == '\0')
-        {
-          goto end;
-        }
-
-        logFile.fd = m2mb_fs_fopen(logFile.current_name, "a");
-
-        if(!logFile.fd)
-        {
-          goto end;
-        }
-      }
-
-      switch(level)
-      {
-        LOG_FILE_PREFIX(TRACE);
-        LOG_FILE_PREFIX(DEBUG);
-        LOG_FILE_PREFIX(INFO);
-        LOG_FILE_PREFIX(WARN);
-        LOG_FILE_PREFIX(ERROR);
-        LOG_FILE_PREFIX(CRITICAL);
-        default:
-          break;
-      }
-
-      va_start(arg, fmt);
-      vsnprintf(log_buffer + offset, LOG_BUFFER_SIZE - offset, fmt, arg);
-      va_end(arg);
-      file_log_or_cache(log_buffer);
-    }
-
-end:
     m2mb_os_sem_put(log_cfg.CSSemHandle);
   }
 
   return sent;
-}
-
-static BOOLEAN check_file_size(const CHAR* filename, UINT32 max_size_kb)
-{
-  struct M2MB_STAT stat;
-  if(-1 == m2mb_fs_stat(filename, &stat))
-  {
-    /* Most likely the file doesn't exist, so return true */
-    return TRUE;
-  }
-  return ((stat.st_size >> 10) < max_size_kb);
-}
-
-static void flush_log_to_file(void)
-{
-  logFile.cache[logFile.cache_idx] = '\0';
-  m2mb_fs_fwrite(logFile.cache, logFile.cache_idx, 1, logFile.fd);
-  logFile.cache_idx = 0;
-}
-
-static void file_log_or_cache(const CHAR* buffer)
-{
-  const UINT32 size = strlen(buffer);
-
-  if(MAX_FILE_LOG_CACHE - 1 - size < logFile.cache_idx)
-  {
-    flush_log_to_file();
-  }
-
-  memcpy(&logFile.cache[logFile.cache_idx], buffer, size);
-  logFile.cache_idx += size;
-}
-
-static CHAR filenameInUse[40] = "";
-
-static BOOLEAN rotate_log_files(const CHAR* filename, UINT32 circular_chunks)
-{
-  CHAR from[40] = "";
-  CHAR to[40] = "";
-  UINT32 i = 0;
-
-  /* This will move log.1 to log.2, log.2 to log.3 and so on until the last one */
-  snprintf(from, sizeof(from), "%s.%u", filename, circular_chunks);
-
-  m2mb_fs_remove(from);
-
-  for(i = circular_chunks - 1; i > 0; --i)
-  {
-    snprintf(from, sizeof(from), "%s.%u", filename, i);
-    snprintf(to, sizeof(to), "%s.%u", filename, i+1);
-    if(-1 == m2mb_fs_rename(from, to))
-    {
-      /* Only return FALSE when the final file cannot be renamed - the other renames could be
-       * failing if there are no files there */
-      if(i == 1)
-      {
-        return FALSE;
-      }
-    }
-  }
-  return TRUE;
-}
-
-static const CHAR* get_next_log_filename(const CHAR* filename,
-    UINT32 circular_chunks, UINT32 max_size_kb)
-{
-  filenameInUse[0] = '\0';
-
-  if(!filename)
-  {
-    goto end;
-  }
-
-  /* First try the original file */
-  snprintf(filenameInUse, sizeof(filenameInUse), "%s", filename);
-
-  if(check_file_size(filenameInUse, max_size_kb))
-  {
-    goto end;
-  }
-
-  /* If there is no circular logging and the original file is full, just return empty string */
-  if(circular_chunks == 0)
-  {
-    filenameInUse[0] = '\0';
-    goto end;
-  }
-
-  /* We should log to filename.1, but if that's full we need to rotate logs and then still use
-   * filename.1 (since the old one got moved to filename.2) */
-  snprintf(filenameInUse, sizeof(filenameInUse), "%s.1", filename);
-
-  if(check_file_size(filenameInUse, max_size_kb))
-  {
-    goto end;
-  }
-
-  if(!rotate_log_files(filename, circular_chunks))
-  {
-    /* Since we failed to rotate, just wipe filename.1 so it can be reused */
-    m2mb_fs_remove(filenameInUse);
-    goto end;
-  }
-
-end:
-  return filenameInUse;
-}
-
-BOOLEAN azx_log_send_to_file(const CHAR* filename, UINT32 circular_chunks,
-    AZX_LOG_LEVEL_E min_level, UINT32 max_size_kb)
-
-{
-  if(!filename)
-  {
-    return FALSE;
-  }
-
-  if(circular_chunks == 0 && !check_file_size(filename, max_size_kb))
-  {
-    return FALSE;
-  }
-
-  if(logFile.fd)
-  {
-    m2mb_fs_fclose(logFile.fd);
-    logFile.fd = 0;
-  }
-
-  snprintf(logFile.current_name, sizeof(logFile.current_name), "%s",
-      get_next_log_filename(filename, circular_chunks, max_size_kb));
-
-  if(logFile.current_name[0] == '\0')
-  {
-    return FALSE;
-  }
-
-  logFile.fd = m2mb_fs_fopen(logFile.current_name, "a");
-
-  if(!logFile.fd)
-  {
-    return FALSE;
-  }
-
-  snprintf(logFile.name, sizeof(logFile.name), "%s", filename);
-  logFile.circular_chunks = circular_chunks;
-  logFile.min_level = min_level;
-  logFile.max_size_kb = max_size_kb;
-  logFile.cache_idx = 0;
-  return TRUE;
-}
-
-void azx_log_flush_to_file(void)
-{
-  m2mb_os_sem_get(log_cfg.CSSemHandle, M2MB_OS_WAIT_FOREVER );
-  flush_log_to_file();
-  m2mb_os_sem_put(log_cfg.CSSemHandle);
 }

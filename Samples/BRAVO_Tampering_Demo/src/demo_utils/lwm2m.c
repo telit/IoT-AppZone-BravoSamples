@@ -15,7 +15,7 @@
   @author FabioPi
 
   @date
-    2020-02-15
+    2021-01-20
 */
 /* Include files ================================================================================*/
 #include <stdint.h>
@@ -47,7 +47,7 @@
 /* Local statics ================================================================================*/
 
 /* ONEEDGE */
-static M2MB_LWM2M_HANDLE _h;
+static M2MB_LWM2M_HANDLE lwm2mHandle;
 
 static M2MB_LWM2M_OBJ_URI_T _obj_telit_service_uri = {.uriLen = 4, .obj = 33211, .objInst = 0, .resource = 0, .resourceInst = 1};
 
@@ -92,6 +92,7 @@ void lwm2mIndCB( M2MB_LWM2M_HANDLE h, M2MB_LWM2M_EVENT_E event, UINT16 resp_size
       if(resp->result == M2MB_LWM2M_RES_SUCCESS)
       {
         AZX_LOG_DEBUG( "LWM2M enable result OK\r\n");
+        m2mb_os_ev_set(lwm2m_evHandle, EV_LWM2M_ENABLE_RES_BIT, M2MB_OS_EV_SET);
       }
       else
       {
@@ -106,6 +107,7 @@ void lwm2mIndCB( M2MB_LWM2M_HANDLE h, M2MB_LWM2M_EVENT_E event, UINT16 resp_size
       if(resp->result == M2MB_LWM2M_RES_SUCCESS)
       {
         AZX_LOG_DEBUG( "LWM2M set result OK\r\n");
+        m2mb_os_ev_set(lwm2m_evHandle, EV_LWM2M_SET_RES_BIT, M2MB_OS_EV_SET);
       }
       else
       {
@@ -120,6 +122,7 @@ void lwm2mIndCB( M2MB_LWM2M_HANDLE h, M2MB_LWM2M_EVENT_E event, UINT16 resp_size
       if(resp->result == M2MB_LWM2M_RES_SUCCESS)
       {
         AZX_LOG_TRACE( "LWM2M write result OK\r\n");
+        m2mb_os_ev_set(lwm2m_evHandle, EV_LWM2M_WRITE_RES_BIT, M2MB_OS_EV_SET);
       }
       else
       {
@@ -173,7 +176,7 @@ void lwm2mIndCB( M2MB_LWM2M_HANDLE h, M2MB_LWM2M_EVENT_E event, UINT16 resp_size
           break;
         case M2MB_LWM2M_CL_STATE_REGISTERED:
           AZX_LOG_DEBUG( "resp->info == M2MB_LWM2M_CL_STATE_REGISTERED\r\n" );
-          m2mb_os_ev_set(lwm2m_evHandle, EV_SRV_REG_BIT, M2MB_OS_EV_SET);
+          m2mb_os_ev_set(lwm2m_evHandle, EV_LWM2M_SRV_REG_BIT, M2MB_OS_EV_SET);
           break;
         case M2MB_LWM2M_CL_STATE_DEREGISTERING:
           AZX_LOG_DEBUG( "resp->info == M2MB_LWM2M_CL_STATE_DEREGISTERING\r\n" );
@@ -242,7 +245,7 @@ uint8_t oneedge_init( INT32 obj_id )
   {
     m2mb_os_ev_setAttrItem( &evAttrHandle, M2MB_OS_EV_SEL_CMD_DEL_ATTR, NULL );
     AZX_LOG_CRITICAL("m2mb_os_ev_init failed!\r\n");
-    return 0;
+    return -1;
   }
   else
   {
@@ -250,43 +253,64 @@ uint8_t oneedge_init( INT32 obj_id )
   }
 
   
-  //get the handle of the lwm2m client on _h
-  retVal = m2mb_lwm2m_init( &_h, lwm2mIndCB, ( void * )NULL );
+  //get the handle of the lwm2m client on lwm2mHandle
+  retVal = m2mb_lwm2m_init( &lwm2mHandle, lwm2mIndCB, ( void * )NULL );
 
   if( retVal != M2MB_RESULT_SUCCESS )
   {
     AZX_LOG_ERROR( "m2mb_lwm2m_init returned error %d\r\n", retVal );
+    m2mb_os_ev_deinit( lwm2m_evHandle );
     return -1;
   }
 
 
-  retVal = m2mb_lwm2m_write( _h, &_obj_telit_service_uri, &service_enable, sizeof( INT32 ) );
+  retVal = m2mb_lwm2m_write( lwm2mHandle, &_obj_telit_service_uri, &service_enable, sizeof( INT32 ) );
   if( retVal != M2MB_RESULT_SUCCESS )
   {
     AZX_LOG_ERROR( "m2mb_lwm2m_write returned error %d\r\n", retVal );
+    m2mb_os_ev_deinit( lwm2m_evHandle );
+
+    m2mb_lwm2m_deinit( lwm2mHandle );
     return -1;
   }
 
   //AT#LWM2MENA=1
   memset( &pars, 0, sizeof( M2MB_LWM2M_ENABLE_REQ_T ) );
 
-  pars.apnclass = 0;
-  pars.guardRequestEventSecs = 0;
-  pars.guardReleaseEventSecs = 0;
+  pars.apnclass = 1; /*CID*/
+  pars.guardRequestEventSecs = 5;
+  pars.guardReleaseEventSecs = 5;
   pars.commandType = M2MB_LWM2MENA_CMD_TYPE_SET;
   pars.mode = M2MB_LWM2M_MODE_NO_ACK;
 
-  retVal = m2mb_lwm2m_enable( _h, &pars );
-
-
-
+  retVal = m2mb_lwm2m_enable( lwm2mHandle, &pars );
   if( retVal != M2MB_RESULT_SUCCESS )
   {
     AZX_LOG_ERROR( "m2mb_lwm2m_enable returned error %d\r\n", retVal );
+    m2mb_os_ev_deinit( lwm2m_evHandle );
+    m2mb_lwm2m_deinit( lwm2mHandle );
     return -1;
   }
 
+  if(M2MB_OS_SUCCESS != m2mb_os_ev_get(
+      lwm2m_evHandle,
+      EV_LWM2M_ENABLE_RES_BIT,
+      M2MB_OS_EV_GET_ANY_AND_CLEAR,
+      &curEvBits,
+      M2MB_OS_MS2TICKS(10000) /*wait 10 seconds for the event to occur*/
+  )
+  )
+  {
+    AZX_LOG_ERROR("m2mb_lwm2m_enable timeout!\r\n");
+    m2mb_os_ev_deinit( lwm2m_evHandle );
 
+    azx_sleep_ms(2000);
+    m2mb_lwm2m_deinit(lwm2mHandle);
+    return -1;
+  }
+
+  azx_sleep_ms(1000);
+  
   /*new object instance information*/
   uri.obj = obj_id;
   uri.objInst = 0;
@@ -294,20 +318,27 @@ uint8_t oneedge_init( INT32 obj_id )
   new_inst_params.agent = 0; /*Telit Agent*/
   /*If OK the instance was not present, and so it was created. If an error
      is received, it is likely because the instance already exists.*/
-  retVal = m2mb_lwm2m_newinst( _h, &uri, &new_inst_params );
+  retVal = m2mb_lwm2m_newinst( lwm2mHandle, &uri, &new_inst_params );
 
   if( retVal != M2MB_RESULT_SUCCESS )
   {
     AZX_LOG_ERROR( "m2mb_lwm2m_newinst returned error %d\r\n", retVal );
+    m2mb_os_ev_deinit( lwm2m_evHandle );
+    m2mb_lwm2m_deinit( lwm2mHandle );
     return -1;
   }
 
-  AZX_LOG_DEBUG("Waiting LWM2M Registering (60 seconds)...\r\n");
-  osRes = m2mb_os_ev_get(lwm2m_evHandle, EV_SRV_REG_BIT, M2MB_OS_EV_GET_ANY_AND_CLEAR, &curEvBits, M2MB_OS_MS2TICKS(60000));
+  AZX_LOG_DEBUG("Waiting LWM2M Registering (120 seconds timeout)...\r\n");
+  osRes = m2mb_os_ev_get(lwm2m_evHandle, EV_LWM2M_SRV_REG_BIT, M2MB_OS_EV_GET_ANY_AND_CLEAR, &curEvBits, M2MB_OS_MS2TICKS(120000));
   if(osRes != M2MB_OS_SUCCESS)
   {
     AZX_LOG_ERROR("LWM2M Register timeout!\r\n");
-    return 1;
+    m2mb_os_ev_deinit( lwm2m_evHandle );
+
+    m2mb_lwm2m_disable(lwm2mHandle);
+    azx_sleep_ms(2000);
+    m2mb_lwm2m_deinit(lwm2mHandle);
+    return -1;
   }
 
   return 0;
@@ -317,7 +348,7 @@ uint8_t oneedge_init( INT32 obj_id )
 /*-----------------------------------------------------------------------------------------------*/
 void update_tamper_LWM2MObject( int value )
 {
-  M2MB_RESULT_E retVal = m2mb_lwm2m_write( _h, &_obj_tamper_uri, &value, sizeof( int ) );
+  M2MB_RESULT_E retVal = m2mb_lwm2m_write( lwm2mHandle, &_obj_tamper_uri, &value, sizeof( int ) );
 
   if( retVal != M2MB_RESULT_SUCCESS )
   {
@@ -330,13 +361,13 @@ void update_tamper_LWM2MObject( int value )
 /*-----------------------------------------------------------------------------------------------*/
 void update_environment_LWM2MObject( float _t, float _p, float _rh, INT16 _iaq )
 {
-  M2MB_RESULT_E retVal = m2mb_lwm2m_set( _h, &_obj_environment_uri_t, &_t, sizeof( float ) );
+  M2MB_RESULT_E retVal = m2mb_lwm2m_set( lwm2mHandle, &_obj_environment_uri_t, &_t, sizeof( float ) );
   azx_sleep_ms( 10 );
-  retVal = m2mb_lwm2m_set( _h, &_obj_environment_uri_p, &_p, sizeof( float ) );
+  retVal = m2mb_lwm2m_set( lwm2mHandle, &_obj_environment_uri_p, &_p, sizeof( float ) );
   azx_sleep_ms( 10 );
-  retVal = m2mb_lwm2m_set( _h, &_obj_environment_uri_h, &_rh, sizeof( float ) );
+  retVal = m2mb_lwm2m_set( lwm2mHandle, &_obj_environment_uri_h, &_rh, sizeof( float ) );
   azx_sleep_ms( 10 );
-  retVal = m2mb_lwm2m_set( _h, &_obj_environment_uri_iaq, &_iaq, sizeof( INT16 ) );
+  retVal = m2mb_lwm2m_set( lwm2mHandle, &_obj_environment_uri_iaq, &_iaq, sizeof( INT16 ) );
 
   if( retVal != M2MB_RESULT_SUCCESS )
   {
@@ -350,15 +381,15 @@ void update_environment_LWM2MObject( float _t, float _p, float _rh, INT16 _iaq )
 void update_rotation_LWM2MObject( float _w, float _x, float _y, float _z, INT16 _acc )
 {
   M2MB_RESULT_E retVal;
-  retVal = m2mb_lwm2m_set( _h, &_obj_rotation_uri_w, &_w, sizeof( float ) );
+  retVal = m2mb_lwm2m_set( lwm2mHandle, &_obj_rotation_uri_w, &_w, sizeof( float ) );
   //azx_sleep_ms(100);
-  retVal = m2mb_lwm2m_set( _h, &_obj_rotation_uri_x, &_x, sizeof( float ) );
+  retVal = m2mb_lwm2m_set( lwm2mHandle, &_obj_rotation_uri_x, &_x, sizeof( float ) );
   //azx_sleep_ms(100);
-  retVal = m2mb_lwm2m_set( _h, &_obj_rotation_uri_y, &_y, sizeof( float ) );
+  retVal = m2mb_lwm2m_set( lwm2mHandle, &_obj_rotation_uri_y, &_y, sizeof( float ) );
   //azx_sleep_ms(100);
-  retVal = m2mb_lwm2m_set( _h, &_obj_rotation_uri_z, &_z, sizeof( float ) );
+  retVal = m2mb_lwm2m_set( lwm2mHandle, &_obj_rotation_uri_z, &_z, sizeof( float ) );
   //azx_sleep_ms(100);
-  retVal = m2mb_lwm2m_set( _h, &_obj_rotation_uri_a, &_acc, sizeof( INT16 ) );
+  retVal = m2mb_lwm2m_set( lwm2mHandle, &_obj_rotation_uri_a, &_acc, sizeof( INT16 ) );
 
   if( retVal != M2MB_RESULT_SUCCESS )
   {
@@ -371,7 +402,7 @@ void update_rotation_LWM2MObject( float _w, float _x, float _y, float _z, INT16 
 /*-----------------------------------------------------------------------------------------------*/
 void update_smartlock_LWM2MObject( int value )
 {
-  M2MB_RESULT_E retVal = m2mb_lwm2m_write( _h, &_obj_smartlock_uri, &value, sizeof( int ) );
+  M2MB_RESULT_E retVal = m2mb_lwm2m_write( lwm2mHandle, &_obj_smartlock_uri, &value, sizeof( int ) );
 
   if( retVal != M2MB_RESULT_SUCCESS )
   {

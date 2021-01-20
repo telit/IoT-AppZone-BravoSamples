@@ -1,11 +1,10 @@
-/*Copyright (C) 2020 Telit Communications S.p.A. Italy - All Rights Reserved.*/
-/*    See LICENSE file in the project root for full license information.     */
-
+/*    Copyright (C) Telit Communications S.p.A. Italy All Rights Reserved.    */
+/*     See LICENSE file in the project root for full license information.     */
 #ifndef HDR_M2M_UTILS_H_
 #define HDR_M2M_UTILS_H_
 /**
  * @file azx_utils.h
- * @version 1.0.1
+ * @version 1.0.0
  * @dependencies azx_log
  * @author Ioannis Demetriou
  * @author Sorin Basca
@@ -68,7 +67,7 @@ const CHAR* azx_hex_dump(const void* data, UINT32 len);
 
 */
 /*-----------------------------------------------------------------------------------------------*/
-void azx_reboot_now(void);
+void azx_reboot_now();
 
 /**
   @brief Shuts the modem down straight away.
@@ -81,7 +80,7 @@ void azx_reboot_now(void);
 
 */
 /*-----------------------------------------------------------------------------------------------*/
-void azx_shutdown_now(void);
+void azx_shutdown_now();
 
 
 

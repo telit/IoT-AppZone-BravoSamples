@@ -23,7 +23,7 @@
 /**
  * @brief The current version of the Samples
  */
-#define VERSION "1.0.3"
+#define VERSION "1.0.4"
 
 /**
  * @name Log Settings

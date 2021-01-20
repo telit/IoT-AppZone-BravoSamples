@@ -17,19 +17,17 @@ var azx__log_8h =
       [ "AZX_LOG_TO_MAX", "group__log_conf.html#gga03b618927cb5d884386832ab76781760acd8c06c121bab2a0f3aede4b76afde39", null ]
     ] ],
     [ "AZX_LOG_LEVEL_E", "group__log_conf.html#gae9fa7be40e4fcae6093707def57f82a5", [
+      [ "AZX_LOG_LEVEL_NONE", "group__log_conf.html#ggae9fa7be40e4fcae6093707def57f82a5a8f609b972c7fd17cec42b2c216dc68b4", null ],
       [ "AZX_LOG_LEVEL_TRACE", "group__log_conf.html#ggae9fa7be40e4fcae6093707def57f82a5adc5cc122c3a06700e09e4c6d1cc17497", null ],
       [ "AZX_LOG_LEVEL_DEBUG", "group__log_conf.html#ggae9fa7be40e4fcae6093707def57f82a5aa77afa2490f92d58d965e30ce97c8048", null ],
       [ "AZX_LOG_LEVEL_INFO", "group__log_conf.html#ggae9fa7be40e4fcae6093707def57f82a5a2bdb3bd46fb4a347265f0c966ded4f25", null ],
       [ "AZX_LOG_LEVEL_WARN", "group__log_conf.html#ggae9fa7be40e4fcae6093707def57f82a5a0d4c7c18f82729850d7a1c3e35e2f0b8", null ],
       [ "AZX_LOG_LEVEL_ERROR", "group__log_conf.html#ggae9fa7be40e4fcae6093707def57f82a5acc52fcbd7aa2088fe583a11661b4abf2", null ],
-      [ "AZX_LOG_LEVEL_CRITICAL", "group__log_conf.html#ggae9fa7be40e4fcae6093707def57f82a5a51671d346b1e7d44f8993fa9d2ca174c", null ],
-      [ "AZX_LOG_LEVEL_NONE", "group__log_conf.html#ggae9fa7be40e4fcae6093707def57f82a5a8f609b972c7fd17cec42b2c216dc68b4", null ]
+      [ "AZX_LOG_LEVEL_CRITICAL", "group__log_conf.html#ggae9fa7be40e4fcae6093707def57f82a5a51671d346b1e7d44f8993fa9d2ca174c", null ]
     ] ],
     [ "azx_log_deinit", "azx__log_8h.html#a1cff830ca498f89db8a6ba0882441231", null ],
-    [ "azx_log_flush_to_file", "azx__log_8h.html#a3e999a06dd697da3196e357039081124", null ],
     [ "azx_log_formatted", "azx__log_8h.html#a024e23064b2dc69cbeeab7b728d4d010", null ],
     [ "azx_log_getLevel", "azx__log_8h.html#ab2c4e9406084c9f69c1314a718cc90d8", null ],
     [ "azx_log_init", "group__log_conf.html#ga08e797515ecc2b71223a72c77c6dc6af", null ],
-    [ "azx_log_send_to_file", "azx__log_8h.html#af64520b985c9e8b97fda9dd77279bdd3", null ],
     [ "azx_log_setLevel", "azx__log_8h.html#a7b0daaed2d1a5700a26365e409593a4b", null ]
 ];
