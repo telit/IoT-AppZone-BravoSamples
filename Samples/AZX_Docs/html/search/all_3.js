@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['usage_20of_20logging_20functionalities_45',['Usage of logging functionalities',['../group__log_usage.html',1,'']]]
+  ['m2m_5fos_5ftask_5fstack_5flimit_88',['M2M_OS_TASK_STACK_LIMIT',['../group__task_usage.html#gga036b9cf9c298d9d53b608bf3942e3fb3ab517d507287a275651ea4c6bb28320aa',1,'azx_tasks.h']]]
 ];

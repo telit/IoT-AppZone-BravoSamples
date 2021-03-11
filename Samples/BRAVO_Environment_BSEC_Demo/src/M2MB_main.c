@@ -12,7 +12,7 @@
   @description
     Environment Demo application. Debug prints on MAIN UART
   @version
-    1.0.1
+    1.0.2
   @note
     Start of Appzone: Entry point
     User code entry is in function M2MB_main()
@@ -52,7 +52,7 @@
 
 #include "bhy_support.h"
 #include "bhy_uc_driver.h"
-#include "Bosch_PCB_7183_di03_BMI160-7183_di03.2.1.11696_170103.h"
+#include "bosch_pcb_7183_di03_bmi160_bmm150-7183_di03-2-1-11696_20180502.h"
 #include "bme680.h"
 
 #include "gpio.h"
@@ -267,6 +267,7 @@ void M2MB_main( int argc, char **argv )
   AZX_LOG_INFO( "Starting Environmental BSEC Demo. This is v%s built on %s %s.\r\n",
                 VERSION, __DATE__, __TIME__ );
 
+INT32 ids[] = { ENVIRONMENT_OBJ_ID };
   /* Open GPIO */
   if( open_LED( LED_PIN_NUM ) != 0 )
   {
@@ -323,7 +324,7 @@ void M2MB_main( int argc, char **argv )
 
 
   /*Initialize one edge lwm2m configuration*/
-  if(oneedge_init( ENVIRONMENT_OBJ_ID ) != 0)
+  if(oneedge_init( ids, sizeof(ids) / sizeof(ids[0]) ) != 0)
   {
     AZX_LOG_ERROR("Failed enabling LWM2M!\r\n");
     return;

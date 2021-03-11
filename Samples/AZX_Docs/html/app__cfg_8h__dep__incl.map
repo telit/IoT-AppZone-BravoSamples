@@ -1,5 +1,6 @@
 <map id="hdr/app_cfg.h" name="hdr/app_cfg.h">
-<area shape="rect" id="node1" title="Application configuration settings conveniently located here." alt="" coords="9,5,119,32"/>
-<area shape="rect" id="node2" href="$azx__log_8h.html" title="Logging utilities to print on available output channels." alt="" coords="9,80,119,107"/>
-<area shape="rect" id="node3" href="$azx__utils_8h.html" title="Various helpful utilities." alt="" coords="5,155,123,181"/>
+<area shape="rect" id="node1" title="Application configuration settings conveniently located here." alt="" coords="79,5,180,32"/>
+<area shape="rect" id="node2" href="$azx__log_8h.html" title="Logging utilities to print on available output channels." alt="" coords="79,80,179,107"/>
+<area shape="rect" id="node3" href="$azx__tasks_8h.html" title="Tasks related utilities." alt="" coords="5,155,120,181"/>
+<area shape="rect" id="node4" href="$azx__utils_8h.html" title="Various helpful utilities." alt="" coords="144,155,251,181"/>
 </map>
