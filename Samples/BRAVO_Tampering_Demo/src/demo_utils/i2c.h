@@ -29,6 +29,9 @@
 #define I2C_SCL       (UINT8) 3  //GPIO 3
 #define BHY_I2C_160B_ADDR1 (UINT16) 0x28
 
+
+extern M2MB_OS_SEM_HANDLE I2C_CSSemHandle;
+
 /* Global typedefs ==============================================================================*/
 /* Global functions =============================================================================*/
 

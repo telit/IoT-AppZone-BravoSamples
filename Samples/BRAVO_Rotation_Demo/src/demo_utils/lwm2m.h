@@ -30,7 +30,6 @@
 #define TAMPERING_OBJ_ID 26242
 #define ENVIRONMENT_OBJ_ID 26251
 #define ROTATION_OBJ_ID 26250
-#define SMARTLOCK_OBJ_ID 26247
 
 
 #define EV_LWM2M_ENABLE_RES_BIT         (UINT32)0x00000001
@@ -41,8 +40,7 @@
 #define EV_LWM2M_READ_RES_BIT           (UINT32)0x00000020
 #define EV_LWM2M_SRV_REG_BIT            (UINT32)0x00000040
 #define EV_LWM2M_GET_STAT_RES_BIT       (UINT32)0x00000080
-
-
+#define CTX_ID 1 //default cid used by lwm2m
 /**
   @brief        Callback function for Client generated LWM2M events
 
@@ -63,7 +61,7 @@ void lwm2mIndCB( M2MB_LWM2M_HANDLE h, M2MB_LWM2M_EVENT_E event, UINT16 resp_size
   @return       result of initialization
 
 */
-uint8_t oneedge_init( INT32 obj_id );
+uint8_t oneedge_init( INT32 *obj_ids, INT16 obj_num );
 
 /**
   @brief        Write a value to LWM2M Tamper uri
@@ -100,13 +98,7 @@ void update_environment_LWM2MObject( float _t, float _p, float _rh, INT16 _iaq )
 void update_rotation_LWM2MObject( float _w, float _x, float _y, float _z, INT16 _acc );
 
 
-/**
-  @brief        Write a value to LWM2M SmartLock uri
 
-  @param[in]    value  integer to be written
-
-*/
-void update_smartlock_LWM2MObject( int value );
 
 /**
   @brief        Check existence of XML object description file in XML directory

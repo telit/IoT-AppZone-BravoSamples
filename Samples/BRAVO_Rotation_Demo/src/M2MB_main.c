@@ -12,7 +12,7 @@
   @description
     Rotation Demo application. Debug prints on MAIN UART
   @version
-    1.0.0
+    1.0.1
   @note
     Start of Appzone: Entry point
     User code entry is in function M2MB_main()
@@ -50,7 +50,7 @@
 
 #include "bhy_support.h"
 #include "bhy_uc_driver.h"
-#include "Bosch_PCB_7183_di03_BMI160_BMM150-7183_di03.2.1.11696_170103.h"
+#include "bosch_pcb_7183_di03_bmi160_bmm150-7183_di03-2-1-11696_20180502.h"
 
 #include "gpio.h"
 #include "i2c.h"
@@ -76,7 +76,7 @@
 #define MAX_PACKET_LENGTH              18
 #define TICKS_IN_ONE_SECOND            32000.0F
 
-#define ROTATION_VECTOR_SAMPLE_RATE    100
+#define ROTATION_VECTOR_SAMPLE_RATE    10  //Hz
 
 
 /* Local typedefs ===============================================================================*/
@@ -108,8 +108,8 @@ static void demo_sensor( void );
 
 static void sensors_callback_rotation_vector( bhy_data_generic_t *sensor_data,
                                               bhy_virtual_sensor_t sensor_id )
-{
-  ( void ) sensor_id;
+{ 
+  (void)sensor_id;
   static int16_t old_w = 0;
   static int16_t old_x = 0;
   static int16_t old_y = 0;
@@ -129,7 +129,7 @@ static void sensors_callback_rotation_vector( bhy_data_generic_t *sensor_data,
 
   /* emit message only if value is different from previous one and it is new */
 
-  if( ( i++ >= 500 ) && is_new_value )
+  if( ( i++ >= 50 ) && is_new_value )
   {
     update_rotation_LWM2MObject( w, x, y, z, sensor_data->data_quaternion.estimated_accuracy );
     i = 0;
@@ -173,9 +173,9 @@ static void demo_sensor( void )
   AZX_LOG_INFO( "version=%s\r\n", bhy_get_version() );
 
   /* init the bhy chip */
-  if( bhy_driver_init( bhy1_fw ) )
+  if( bhy_driver_init( bhy_firmware_image ) )
   {
-    AZX_LOG_ERROR( "Fail to init bhy\r\n" );
+    AZX_LOG_CRITICAL( "Fail to init bhy\r\n" );
     return;
   }
 
@@ -208,7 +208,7 @@ static void demo_sensor( void )
   if( bhy_install_sensor_callback( VS_TYPE_ROTATION_VECTOR, VS_WAKEUP,
                                    sensors_callback_rotation_vector ) )
   {
-    AZX_LOG_ERROR( "Fail to install sensor callback\r\n" );
+    AZX_LOG_ERROR( "Fail to install rotation sensor callback\r\n" );
     return;
   }
 
@@ -216,7 +216,7 @@ static void demo_sensor( void )
   if( bhy_enable_virtual_sensor( VS_TYPE_ROTATION_VECTOR, VS_WAKEUP, ROTATION_VECTOR_SAMPLE_RATE, 0,
                                  VS_FLUSH_NONE, 0, 0 ) )
   {
-    AZX_LOG_ERROR( "Fail to enable sensor id=%d\r\n", VS_TYPE_ROTATION_VECTOR );
+    AZX_LOG_ERROR( "Fail to enable rotation sensor id=%d\r\n", VS_TYPE_ROTATION_VECTOR );
     return;
   }
   write_LED( M2MB_GPIO_HIGH_VALUE );
@@ -314,6 +314,8 @@ void M2MB_main( int argc, char **argv )
 {
   ( void )argc;
   ( void )argv;
+  
+   INT32 ids[] = { ROTATION_OBJ_ID };
   /* SET output channel */
   AZX_LOG_INIT();
   AZX_LOG_INFO( "Starting Rotation Demo app. This is v%s built on %s %s.\r\n",
@@ -387,7 +389,7 @@ void M2MB_main( int argc, char **argv )
     return;
   }
 
-  if(oneedge_init( ROTATION_OBJ_ID ) != 0)
+  if(oneedge_init( ids, sizeof(ids) / sizeof(ids[0]) ) != 0)
   {
     AZX_LOG_ERROR("Failed enabling LWM2M!\r\n");
     return;

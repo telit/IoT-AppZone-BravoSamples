@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LWM2M xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.openmobilealliance.org/tech/profiles/LWM2M.xsd">
+	<Object ObjectType="MODefinition">
+		<Name>3D Rotation Vector</Name>
+		<Description1></Description1>
+		<ObjectID>26250</ObjectID>
+		<ObjectURN>urn:oma:lwm2m:x:26250</ObjectURN>
+		<LWM2MVersion>1.0</LWM2MVersion>
+		<ObjectVersion>1.0</ObjectVersion>
+		<MultipleInstances>Single</MultipleInstances>
+		<Mandatory>Optional</Mandatory>
+		<Resources>
+			<Item ID="1">
+				<Name>w</Name>
+				<Operations>R</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Mandatory</Mandatory>
+				<Type>Float</Type>
+				<RangeEnumeration>-1/+1</RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[Intensity]]></Description>
+			</Item>
+			<Item ID="2">
+				<Name>x</Name>
+				<Operations>R</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Mandatory</Mandatory>
+				<Type>Float</Type>
+				<RangeEnumeration>-1/+1</RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[x vector component]]></Description>
+			</Item>
+			<Item ID="3">
+				<Name>y</Name>
+				<Operations>R</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Mandatory</Mandatory>
+				<Type>Float</Type>
+				<RangeEnumeration>-1/+1</RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[y vector component]]></Description>
+			</Item>
+			<Item ID="4">
+				<Name>z</Name>
+				<Operations>R</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Mandatory</Mandatory>
+				<Type>Float</Type>
+				<RangeEnumeration>-1/+1</RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[z vector component]]></Description>
+			</Item>
+			<Item ID="5">
+				<Name>accuracy</Name>
+				<Operations>R</Operations>
+				<MultipleInstances>Single</MultipleInstances>
+				<Mandatory>Optional</Mandatory>
+				<Type>Integer</Type>
+				<RangeEnumeration></RangeEnumeration>
+				<Units></Units>
+				<Description><![CDATA[estimated accuracy]]></Description>
+			</Item>
+		</Resources>
+		<Description2></Description2>
+	</Object>
+</LWM2M>

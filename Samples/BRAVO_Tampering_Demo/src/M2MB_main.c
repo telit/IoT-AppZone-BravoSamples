@@ -12,7 +12,7 @@
   @description
     Tampering Demo application. Debug prints on MAIN UART
   @version
-    1.0.0
+    1.0.1
   @note
     Start of Appzone: Entry point
     User code entry is in function M2MB_main()
@@ -48,7 +48,7 @@
 
 #include "bhy_support.h"
 #include "bhy_uc_driver.h"
-#include "Bosch_PCB_7183_di03_BMI160-7183_di03.2.1.11696_170103.h"
+#include "bosch_pcb_7183_di03_bmi160_bmm150-7183_di03-2-1-11696_20180502.h"
 
 #include "gpio.h"
 #include "i2c.h"
@@ -56,6 +56,24 @@
 
 
 /* Local defines ================================================================================*/
+
+typedef enum
+{
+  STATUS_INVALID = -1,
+  STILL_ENDED = 0,
+  WALKING_ENDED = 1,
+  RUNNING_ENDED = 2,
+  BYCYCLE_ENDED = 3,
+  VEHICLE_ENDED = 4,
+  TILTING_ENDED = 5,
+  STILL_STARTED = 8,
+  WALKING_STARTED = 9,
+  RUNNING_STARTED = 10,
+  BICYCLE_STARTED = 11,
+  VEHICLE_STARTED = 12,
+  TILTING_STARTED = 13,
+
+} BHI_TAMPER_STATUS_E;
 
 /*
    Bosch device
@@ -90,7 +108,7 @@ static uint8_t fifo[FIFO_SIZE];
    @param[in]   sensor_id
 
 */
-static void sensors_callback( bhy_data_generic_t *sensor_data, bhy_virtual_sensor_t sensor_id );
+static void sensors_tamper_callback( bhy_data_generic_t *sensor_data, bhy_virtual_sensor_t sensor_id );
 
 /*-----------------------------------------------------------------------------------------------*/
 /**
@@ -109,96 +127,106 @@ static void demo_sensor( void );
 
 /* Static functions =============================================================================*/
 
-static void sensors_callback( bhy_data_generic_t *sensor_data, bhy_virtual_sensor_t sensor_id )
+static void sensors_tamper_callback( bhy_data_generic_t *sensor_data, bhy_virtual_sensor_t sensor_id )
 {
   int16_t activity = sensor_data->data_scalar_s16.data;
   float time_stamp = ( float )( bhy_system_timestamp ) / TICKS_IN_ONE_SECOND;
   
+  BHI_TAMPER_STATUS_E status = STATUS_INVALID;
+  
   write_LED( M2MB_GPIO_HIGH_VALUE );
+
 
   switch( ( INT32 )sensor_id )
   {
-    case VS_ID_ACTIVITY:
-    case VS_ID_ACTIVITY_WAKEUP:
-      AZX_LOG_INFO( "activity recognized %.2f\r\n", time_stamp );
+  case VS_ID_ACTIVITY:
+  case VS_ID_ACTIVITY_WAKEUP:
+    AZX_LOG_INFO( "activity recognized %.2f\r\n", time_stamp );
 
-      if( activity & 0x1 ) // bit 0
-      {
-        AZX_LOG_INFO( "Still activity ended\r\n" );
-        update_tamper_LWM2MObject( 0 );
-      }
+    if( activity & 0x1 ) // bit 0
+    {
+      AZX_LOG_INFO( "Still activity ended\r\n" );
+      status = STILL_ENDED;
 
-      if( activity & 0x2 ) // bit 1
-      {
-        AZX_LOG_INFO( "Walking activity ended\r\n" );
-        update_tamper_LWM2MObject( 1 );
-      }
+    }
 
-      if( activity & 0x4 ) // bit 2
-      {
-        AZX_LOG_INFO( "Running activity ended\r\n" );
-        update_tamper_LWM2MObject( 2 );
-      }
+    if( activity & 0x2 ) // bit 1
+    {
+      AZX_LOG_INFO( "Walking activity ended\r\n" );
+      status = WALKING_ENDED;
+    }
 
-      if( activity & 0x8 ) // bit 3
-      {
-        AZX_LOG_INFO( "On Bicycle activity ended\r\n" );
-        update_tamper_LWM2MObject( 3 );
-      }
+    if( activity & 0x4 ) // bit 2
+    {
+      AZX_LOG_INFO( "Running activity ended\r\n" );
+      status = RUNNING_ENDED;
+    }
 
-      if( activity & 0x10 ) // bit 4
-      {
-        AZX_LOG_INFO( "In Vehicle activity ended\r\n" );
-        update_tamper_LWM2MObject( 4 );
-      }
+    if( activity & 0x8 ) // bit 3
+    {
+      AZX_LOG_INFO( "On Bicycle activity ended\r\n" );
+      status = BYCYCLE_ENDED;
+    }
 
-      if( activity & 0x20 ) // bit 5
-      {
-        AZX_LOG_INFO( "Tilting activity ended\r\n" );
-        update_tamper_LWM2MObject( 5 );
-      }
+    if( activity & 0x10 ) // bit 4
+    {
+      AZX_LOG_INFO( "In Vehicle activity ended\r\n" );
+      status = VEHICLE_ENDED;
+    }
 
-      if( activity & 0x100 ) // bit 8
-      {
-        AZX_LOG_INFO( "Still activity started\r\n" );
-        update_tamper_LWM2MObject( 8 );
-      }
+    if( activity & 0x20 ) // bit 5
+    {
+      AZX_LOG_INFO( "Tilting activity ended\r\n" );
+      status = TILTING_ENDED;
+    }
 
-      if( activity & 0x200 ) // bit 9
-      {
-        AZX_LOG_INFO( "Walking activity started\r\n" );
-        update_tamper_LWM2MObject( 9 );
-      }
+    if( activity & 0x100 ) // bit 8
+    {
+      AZX_LOG_INFO( "Still activity started\r\n" );
+      status = STILL_STARTED;
+    }
 
-      if( activity & 0x400 ) // bit 10
-      {
-        AZX_LOG_INFO( "Running activity started\r\n" );
-        update_tamper_LWM2MObject( 10 );
-      }
+    if( activity & 0x200 ) // bit 9
+    {
+      AZX_LOG_INFO( "Walking activity started\r\n" );
+      status = WALKING_STARTED;
+    }
 
-      if( activity & 0x800 ) // bit 11
-      {
-        AZX_LOG_INFO( "On Bicycle activity started\r\n" );
-        update_tamper_LWM2MObject( 11 );
-      }
+    if( activity & 0x400 ) // bit 10
+    {
+      AZX_LOG_INFO( "Running activity started\r\n" );
+      status = RUNNING_STARTED;
+    }
 
-      if( activity & 0x1000 ) // bit 12
-      {
-        AZX_LOG_INFO( "In Vehicle activity started\r\n" );
-        update_tamper_LWM2MObject( 12 );
-      }
+    if( activity & 0x800 ) // bit 11
+    {
+      AZX_LOG_INFO( "On Bicycle activity started\r\n" );
+      status = BICYCLE_STARTED;
+    }
 
-      if( activity & 0x2000 ) // bit 13
-      {
-        AZX_LOG_INFO( "Tilting activity started\r\n" );
-        update_tamper_LWM2MObject( 13 );
-      }
+    if( activity & 0x1000 ) // bit 12
+    {
+      AZX_LOG_INFO( "In Vehicle activity started\r\n" );
+      status = VEHICLE_STARTED;
+    }
 
-      break;
+    if( activity & 0x2000 ) // bit 13
+    {
+      AZX_LOG_INFO( "Tilting activity started\r\n" );
+      status = TILTING_STARTED;
+    }
+    break;
 
-    default:
-      AZX_LOG_INFO( "unknown id = %d\r\n", sensor_id );
-      break;
+  default:
+    AZX_LOG_INFO( "unknown id = %d\r\n", sensor_id );
+      status = STATUS_INVALID;
+    break;
+  }
+
+  if(status != STATUS_INVALID)
+  {
+
+    update_tamper_LWM2MObject( (int) status );
   }
 
   /* activity recognition is not time critical, so let's wait a little bit */
@@ -238,7 +266,7 @@ static void demo_sensor( void )
   //struct cus_version_t      bhy_cus_version;
 
   /* init the bhy chip */
-  if( bhy_driver_init( bhy1_fw ) )
+  if( bhy_driver_init( bhy_firmware_image ) )
   {
     AZX_LOG_CRITICAL( "Fail to init bhy\r\n" );
     return;
@@ -263,7 +291,7 @@ static void demo_sensor( void )
   
   /* enables the activity recognition and assigns the callback */
   bhy_enable_virtual_sensor( VS_TYPE_ACTIVITY_RECOGNITION, VS_NON_WAKEUP, 1, 0, VS_FLUSH_NONE, 0, 0 );
-  bhy_install_sensor_callback( VS_TYPE_ACTIVITY_RECOGNITION, VS_NON_WAKEUP, sensors_callback );
+  bhy_install_sensor_callback( VS_TYPE_ACTIVITY_RECOGNITION, VS_NON_WAKEUP, sensors_tamper_callback );
   bhy_install_timestamp_callback( VS_NON_WAKEUP, timestamp_callback );
 
 
@@ -353,6 +381,8 @@ void M2MB_main( int argc, char **argv )
 {
   ( void )argc;
   ( void )argv;
+  
+    INT32 ids[] = { TAMPERING_OBJ_ID };
   /* SET output channel */
   AZX_LOG_INIT();
   AZX_LOG_INFO( "Starting Tampering Demo app. This is v%s built on %s %s.\r\n",
@@ -427,7 +457,7 @@ void M2MB_main( int argc, char **argv )
     return;
   }
 
-  if(oneedge_init( TAMPERING_OBJ_ID ) != 0)
+  if(oneedge_init( ids, sizeof(ids) / sizeof(ids[0]) ) != 0)
   {
     AZX_LOG_ERROR("Failed enabling LWM2M!\r\n");
     return;

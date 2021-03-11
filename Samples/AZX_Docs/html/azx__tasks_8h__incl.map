@@ -1,0 +1,7 @@
+<map id="hdr/azx_tasks.h" name="hdr/azx_tasks.h">
+<area shape="rect" id="node1" title="Tasks related utilities." alt="" coords="47,5,162,32"/>
+<area shape="rect" id="node2" title=" " alt="" coords="5,155,113,181"/>
+<area shape="rect" id="node3" title=" " alt="" coords="47,80,162,107"/>
+<area shape="rect" id="node4" href="$azx__log_8h.html" title="Logging utilities to print on available output channels." alt="" coords="187,80,265,107"/>
+<area shape="rect" id="node5" href="$app__cfg_8h.html" title="Application configuration settings conveniently located here." alt="" coords="187,155,265,181"/>
+</map>
