@@ -12,12 +12,11 @@
   @description
     MultiSensors Demo application. Debug prints on MAIN UART
   @version
-    1.0.0
+    1.0.1
   @note
     Start of Appzone: Entry point
     User code entry is in function M2MB_main()
 
-  @author WhiteBeard
   @author FabioPi
 
   @date
@@ -80,10 +79,16 @@ static INT32 demoTaskCb(INT32 type, INT32 param1, INT32 param2)
   (void) param1;
   (void) param2;
   int reboot_needed = 0;
-  INT32 ids[] = { TAMPERING_OBJ_ID, ROTATION_OBJ_ID, ENVIRONMENT_OBJ_ID };
+  
+  INT16 instances[] = {0};
+  LWM2M_OBJ_REG_T objs[] ={
+	{TAMPERING_OBJ_ID, 1, instances },
+	{ROTATION_OBJ_ID, 1, instances },
+	{ENVIRONMENT_OBJ_ID, 1, instances }
+  };
 
   /* Open GPIO */
-  if( open_LED( LED_PIN_NUM ) != 0 )
+  if( open_LED( LED_INDEX_NUM ) != 0 )
   {
     AZX_LOG_ERROR( "Cannot open gpio channel.\r\n" );
     return -1;
@@ -193,7 +198,7 @@ static INT32 demoTaskCb(INT32 type, INT32 param1, INT32 param2)
     return -1;
   }
 
-  if(oneedge_init( ids, sizeof(ids) / sizeof(ids[0]) ) != 0)
+  if(oneedge_init( objs, 3, NULL ) != 0)
   {
     AZX_LOG_ERROR("Failed enabling LWM2M!\r\n");
     return -1;

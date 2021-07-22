@@ -12,12 +12,11 @@
   @description
     Environment Demo application. Debug prints on MAIN UART
   @version
-    1.0.2
+    1.0.3
   @note
     Start of Appzone: Entry point
     User code entry is in function M2MB_main()
 
-  @author WhiteBeard
   @author FabioPi
 
   @date
@@ -67,7 +66,7 @@
    Bosch device
 */
 #define INT_GPIO_PIN_NUM 6
-#define LED_PIN_NUM 10
+#define LED_INDEX_NUM 2 			  /* GPIO 10 */
 
 
 #define BME680_W_SELF_TEST_FAILED 3
@@ -76,10 +75,10 @@
 
 
 #define MIN_TEMPERATURE INT16_C(0)    /* 0 degree Celsius */
-#define MAX_TEMPERATURE INT16_C(6000)   /* 60 degree Celsius */
+#define MAX_TEMPERATURE INT16_C(6000) /* 60 degree Celsius */
 
 #define MIN_PRESSURE UINT32_C(90000)  /* 900 hecto Pascals */
-#define MAX_PRESSURE UINT32_C(110000)   /* 1100 hecto Pascals */
+#define MAX_PRESSURE UINT32_C(110000) /* 1100 hecto Pascals */
 
 #define MIN_HUMIDITY UINT32_C(20000)  /* 20% relative humidity */
 #define MAX_HUMIDITY UINT32_C(80000)  /* 80% relative humidity*/
@@ -267,9 +266,10 @@ void M2MB_main( int argc, char **argv )
   AZX_LOG_INFO( "Starting Environmental BSEC Demo. This is v%s built on %s %s.\r\n",
                 VERSION, __DATE__, __TIME__ );
 
-INT32 ids[] = { ENVIRONMENT_OBJ_ID };
+  INT16 instances[] = {0};
+  LWM2M_OBJ_REG_T obj = {ENVIRONMENT_OBJ_ID, 1, instances };
   /* Open GPIO */
-  if( open_LED( LED_PIN_NUM ) != 0 )
+  if( open_LED( LED_INDEX_NUM ) != 0 )
   {
     AZX_LOG_ERROR( "Cannot open gpio channel.\r\n" );
     return;
@@ -324,7 +324,7 @@ INT32 ids[] = { ENVIRONMENT_OBJ_ID };
 
 
   /*Initialize one edge lwm2m configuration*/
-  if(oneedge_init( ids, sizeof(ids) / sizeof(ids[0]) ) != 0)
+  if(oneedge_init( &obj, 1, NULL)  != 0)
   {
     AZX_LOG_ERROR("Failed enabling LWM2M!\r\n");
     return;
