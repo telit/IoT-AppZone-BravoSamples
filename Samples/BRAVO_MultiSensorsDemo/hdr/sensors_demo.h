@@ -49,9 +49,9 @@
 
 /* Global declarations ==========================================================================*/
 #define INT_GPIO_PIN_NUM 6
-#define LED_PIN_NUM 10
+#define LED_INDEX_NUM 2      /* GPIO 10  */
 
-#define SENSOR_AR_TOUT  100  // 10 = 1 sec
+#define SENSOR_AR_TOUT  100  /* 10 = 1 sec  */
 
 #define TAMPER_XML_NAME "object_26242.xml"
 #define ROTATION_XML_NAME "object_26250.xml"
@@ -63,7 +63,7 @@
 #define MAX_PACKET_LENGTH              18
 #define TICKS_IN_ONE_SECOND            32000.0F
 
-#define ROTATION_VECTOR_SAMPLE_RATE    10  //Hz
+#define ROTATION_VECTOR_SAMPLE_RATE    10 /* Hz */
 
 
 /*BME*/
@@ -71,10 +71,10 @@
 #define BME680_W_SELF_TEST_FAILED 3
 
 #define MIN_TEMPERATURE INT16_C(0)    /* 0 degree Celsius */
-#define MAX_TEMPERATURE INT16_C(6000)   /* 60 degree Celsius */
+#define MAX_TEMPERATURE INT16_C(6000) /* 60 degree Celsius */
 
 #define MIN_PRESSURE UINT32_C(90000)  /* 900 hecto Pascals */
-#define MAX_PRESSURE UINT32_C(110000)   /* 1100 hecto Pascals */
+#define MAX_PRESSURE UINT32_C(110000) /* 1100 hecto Pascals */
 
 #define MIN_HUMIDITY UINT32_C(20000)  /* 20% relative humidity */
 #define MAX_HUMIDITY UINT32_C(80000)  /* 80% relative humidity*/

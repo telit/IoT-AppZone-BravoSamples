@@ -34,7 +34,7 @@
   <td id="projectlogo"><img alt="Logo" src="telit-logo.png"/></td>
   <td id="projectalign" style="padding-left: 2em;">
    <div id="projectname">AZX (AppZone eXtensions) documentation
-   &#160;<span id="projectnumber">1.0.6</span>
+   &#160;<span id="projectnumber">1.0.7</span>
    </div>
    <div id="projectbrief">A set of companion utilities that make AZ development easier</div>
   </td>
@@ -93,6 +93,7 @@ $(document).ready(function(){initNavTree('azx__log_8h.html','');});
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Data Structures</a> &#124;
+<a href="#define-members">Macros</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
@@ -103,15 +104,15 @@ $(document).ready(function(){initNavTree('azx__log_8h.html','');});
 <p>Logging utilities to print on available output channels.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;m2mb_types.h&quot;</code><br />
-<code>#include &quot;<a class="el" href="app__cfg_8h_source.html">app_cfg.h</a>&quot;</code><br />
+<code>#include &quot;m2mb_trace.h&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for azx_log.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="azx__log_8h__incl.png" border="0" usemap="#hdr_2azx__log_8h" alt=""/></div>
 <map name="hdr_2azx__log_8h" id="hdr_2azx__log_8h">
-<area shape="rect" title="Logging utilities to print on available output channels." alt="" coords="68,5,168,32"/>
+<area shape="rect" title="Logging utilities to print on available output channels." alt="" coords="75,5,175,32"/>
 <area shape="rect" title=" " alt="" coords="5,80,113,107"/>
-<area shape="rect" href="app__cfg_8h.html" title="Application configuration settings conveniently located here." alt="" coords="137,80,216,107"/>
+<area shape="rect" title=" " alt="" coords="137,80,243,107"/>
 </map>
 </div>
 </div><div class="textblock"><div class="dynheader">
@@ -132,6 +133,30 @@ Data Structures</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_a_z_x___l_o_g___c_f_g___t.html">AZX_LOG_CFG_T</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Logging configuration structure.  <a href="struct_a_z_x___l_o_g___c_f_g___t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:a4af7b5c67a5df4ffbcafe9a91a4677bc"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="azx__log_8h.html#a4af7b5c67a5df4ffbcafe9a91a4677bc">AZX_LOG_INIT</a>()</td></tr>
+<tr class="memdesc:a4af7b5c67a5df4ffbcafe9a91a4677bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Application logs are printed to the specified channel.  <a href="azx__log_8h.html#a4af7b5c67a5df4ffbcafe9a91a4677bc">More...</a><br /></td></tr>
+<tr class="separator:a4af7b5c67a5df4ffbcafe9a91a4677bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4cbebf6589190814b5ee9adb22bb1d44"><td class="memItemLeft" align="right" valign="top"><a id="a4cbebf6589190814b5ee9adb22bb1d44"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>AZX_LOG_CRITICAL</b>(a...)&#160;&#160;&#160;m2mb_trace_file_line_printf(__FILE__, __LINE__, M2MB_TC_M2M_USER, M2MB_TL_FATAL, (CHAR*)a)</td></tr>
+<tr class="separator:a4cbebf6589190814b5ee9adb22bb1d44"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a81e4f03b2a752e5e9cfae1e037ce7256"><td class="memItemLeft" align="right" valign="top"><a id="a81e4f03b2a752e5e9cfae1e037ce7256"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>AZX_LOG_ERROR</b>(a...)&#160;&#160;&#160;m2mb_trace_file_line_printf(__FILE__, __LINE__, M2MB_TC_M2M_USER, M2MB_TL_ERROR, (CHAR*)a)</td></tr>
+<tr class="separator:a81e4f03b2a752e5e9cfae1e037ce7256"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a47bb701aa779a05aa34ed01fcfbbdd54"><td class="memItemLeft" align="right" valign="top"><a id="a47bb701aa779a05aa34ed01fcfbbdd54"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>AZX_LOG_WARN</b>(a...)&#160;&#160;&#160;m2mb_trace_file_line_printf(__FILE__, __LINE__, M2MB_TC_M2M_USER, M2MB_TL_WARNING, (CHAR*)a)</td></tr>
+<tr class="separator:a47bb701aa779a05aa34ed01fcfbbdd54"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a847d9b9f62e31bf14b31882be7418675"><td class="memItemLeft" align="right" valign="top"><a id="a847d9b9f62e31bf14b31882be7418675"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>AZX_LOG_INFO</b>(a...)&#160;&#160;&#160;m2mb_trace_file_line_printf(__FILE__, __LINE__, M2MB_TC_M2M_USER, M2MB_TL_LOG, (CHAR*)a)</td></tr>
+<tr class="separator:a847d9b9f62e31bf14b31882be7418675"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acd61f6160b4cd02c2ec2259b5bc94670"><td class="memItemLeft" align="right" valign="top"><a id="acd61f6160b4cd02c2ec2259b5bc94670"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>AZX_LOG_DEBUG</b>(a...)&#160;&#160;&#160;m2mb_trace_file_line_printf(__FILE__, __LINE__, M2MB_TC_M2M_USER, M2MB_TL_DEBUG, (CHAR*)a)</td></tr>
+<tr class="separator:acd61f6160b4cd02c2ec2259b5bc94670"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa85ac7254570a307564019c5dfb98d83"><td class="memItemLeft" align="right" valign="top"><a id="aa85ac7254570a307564019c5dfb98d83"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>AZX_LOG_TRACE</b>(a...)</td></tr>
+<tr class="separator:aa85ac7254570a307564019c5dfb98d83"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
@@ -194,7 +219,7 @@ Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Logging utilities to print on available output channels. </p>
-<dl class="section version"><dt>Version</dt><dd>1.0.5 </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>1.0.8 </dd></dl>
 <dl class="section user"><dt>Dependencies</dt><dd><br  />
  </dd></dl>
 <dl class="section author"><dt>Author</dt><dd>Fabio Pintus </dd>
@@ -202,7 +227,34 @@ Functions</h2></td></tr>
 Ioannis Demetriou </dd></dl>
 <dl class="section date"><dt>Date</dt><dd>13/01/2017</dd></dl>
 <p>This library code will give user the possibility to print debug messages on their application. </p>
-</div><h2 class="groupheader">Function Documentation</h2>
+</div><h2 class="groupheader">Macro Definition Documentation</h2>
+<a id="a4af7b5c67a5df4ffbcafe9a91a4677bc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4af7b5c67a5df4ffbcafe9a91a4677bc">&#9670;&nbsp;</a></span>AZX_LOG_INIT</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define AZX_LOG_INIT</td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> { \</div>
+<div class="line">  m2mb_trace_init(); \</div>
+<div class="line">  m2mb_trace_enable(M2MB_TC_M2M_USER); \</div>
+<div class="line">} <span class="keywordflow">while</span>(0)</div>
+</div><!-- fragment -->
+<p>Application logs are printed to the specified channel. </p>
+<p>If enabled, all AZX_LOG* messages will be printed to the channel specified in <a class="el" href="azx__log_8h.html#a4af7b5c67a5df4ffbcafe9a91a4677bc">AZX_LOG_INIT</a>.</p>
+<p>If disabled, these messages will be printed using the internal m2mb_trace.h API.</p>
+<p>Call this at your AZ entry point to easily configure logging </p>
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
 <a id="a1cff830ca498f89db8a6ba0882441231"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a1cff830ca498f89db8a6ba0882441231">&#9670;&nbsp;</a></span>azx_log_deinit()</h2>
 

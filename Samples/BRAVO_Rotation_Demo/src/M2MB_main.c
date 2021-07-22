@@ -12,12 +12,11 @@
   @description
     Rotation Demo application. Debug prints on MAIN UART
   @version
-    1.0.1
+    1.0.2
   @note
     Start of Appzone: Entry point
     User code entry is in function M2MB_main()
 
-  @author WhiteBeard
   @author FabioPi
   
   @date
@@ -63,9 +62,9 @@
    Bosch device
 */
 #define INT_GPIO_PIN_NUM 6
-#define LED_PIN_NUM 10
+#define LED_INDEX_NUM 2 /* GPIO 10 */
 
-#define SENSOR_AR_TOUT  100  // 10 = 1 sec
+#define SENSOR_AR_TOUT  100  /* 10 = 1 sec  */
 
 #define XML_NAME "object_26250.xml"
 
@@ -76,7 +75,7 @@
 #define MAX_PACKET_LENGTH              18
 #define TICKS_IN_ONE_SECOND            32000.0F
 
-#define ROTATION_VECTOR_SAMPLE_RATE    10  //Hz
+#define ROTATION_VECTOR_SAMPLE_RATE    10  /* Hz */
 
 
 /* Local typedefs ===============================================================================*/
@@ -315,14 +314,15 @@ void M2MB_main( int argc, char **argv )
   ( void )argc;
   ( void )argv;
   
-   INT32 ids[] = { ROTATION_OBJ_ID };
+  INT16 instances[] = {0};
+  LWM2M_OBJ_REG_T obj = {ROTATION_OBJ_ID, 1, instances };
   /* SET output channel */
   AZX_LOG_INIT();
   AZX_LOG_INFO( "Starting Rotation Demo app. This is v%s built on %s %s.\r\n",
                 VERSION, __DATE__, __TIME__ );
 
   /* Open GPIO */
-  if( open_LED( LED_PIN_NUM ) != 0 )
+  if( open_LED( LED_INDEX_NUM ) != 0 )
   {
     AZX_LOG_ERROR( "Cannot open gpio channel.\r\n" );
     return;
@@ -389,7 +389,7 @@ void M2MB_main( int argc, char **argv )
     return;
   }
 
-  if(oneedge_init( ids, sizeof(ids) / sizeof(ids[0]) ) != 0)
+  if(oneedge_init( &obj, 1, NULL)  != 0)
   {
     AZX_LOG_ERROR("Failed enabling LWM2M!\r\n");
     return;

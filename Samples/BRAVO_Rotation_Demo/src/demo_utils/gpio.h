@@ -25,9 +25,14 @@
 #define SRC_GPIO_H_
 
 /* Global declarations ==========================================================================*/
-/* Global typedefs ==============================================================================*/
-/* Global functions =============================================================================*/
 
+#define RED_LED_GPIO 	1
+#define YELLOW_LED_GPIO 9
+#define GREEN_LED_GPIO	10
+
+/* Global typedefs ==============================================================================*/
+
+/* Global functions =============================================================================*/
 
 /**
   @brief        Callback for GPIO interrupts
@@ -38,6 +43,16 @@
 */
 void gpio_interr_cb( UINT32 fd, void *userdata );
 
+
+
+/**
+  @brief        Close GPIO input file/device
+
+  @param[in]    *pin         GPIO pin number
+  @retval                   0 = device close, error other values
+
+*/
+int close_gpio( int *pin );
 
 /**
   @brief        Open GPIO input file/device
@@ -79,11 +94,37 @@ M2MB_GPIO_VALUE_E read_gpio( void );
 void write_gpio( INT32 fd, M2MB_GPIO_VALUE_E value );
 
 /**
-  @brief        Write value to interrupt GPIO file/device
+  @brief        Write value to LED 1
 
   @param[in]    value      GPIO status to be written
 
 */
 void write_LED( M2MB_GPIO_VALUE_E value );
+
+
+/**
+  @brief        Write value to LED by pin
+
+  @param[in]    value      GPIO status to be written
+
+*/
+void writeLEDbyIndex( INT32 index, M2MB_GPIO_VALUE_E value );
+/**
+  @brief        Return the GPIO descriptor
+
+  @param[in]    value      GPIO index
+  return -1 in case of error
+
+*/
+INT32 getGpioDescriptor(INT32 pin);
+
+/**
+  @brief        Return the GPIO pin
+
+  @param[in]    value      GPIO index
+  return -1 in case of error
+
+*/
+INT32 getGpioPinByIndex(INT32 index);
 
 #endif /* SRC_GPIO_H_ */
