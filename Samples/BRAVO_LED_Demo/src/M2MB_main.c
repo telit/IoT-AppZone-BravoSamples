@@ -11,9 +11,9 @@
   @details
   
   @description
-	LED management through IPSO object 3311 Demo application. Debug prints on MAIN UART
+  LED management through IPSO object 3311 Demo application. Debug prints on MAIN UART
   @version 
-    1.0.0
+    1.0.3
   @note
     Start of Appzone: Entry point
     User code entry is in function M2MB_main()
@@ -146,14 +146,14 @@ static INT32 lwm2m_taskCB( INT32 event, INT32 i_uri, INT32 param2)
 
     AZX_LOG_TRACE("uri.obj = %d\r\n", uri.obj);
     
-	if (uri.obj == M2MB_LWM2M_LIGHT_CONTROL_OBJ_ID)
+    if (uri.obj == LWM2M_LIGHT_CONTROL_OBJ_ID)
     {
       switch(uri.resource)
       {
         case LIGHT_CONTROL_OBJ_ON_OFF_ID:
           AZX_LOG_TRACE("LIGHT_CONTROL_OBJ_ON_OFF_ID");
 
-		  /*Cast the data buffer as an integers array and take the first element*/
+      /*Cast the data buffer as an integers array and take the first element*/
           data_int = !!((INT32) ( (INT32 *)data_buffer )[0]);
 
           AZX_LOG_DEBUG("data_int <%d> \r\n", data_int);
@@ -228,7 +228,7 @@ static INT32 demoAppTask(INT32 type, INT32 param1, INT32 param2)
   M2MB_OS_EV_ATTR_HANDLE  evAttrHandle = NULL;
   UINT32                  curEvBits;
 
-  M2MB_NET_HANDLE netHandle;
+  M2MB_NET_HANDLE netHandle = NULL;
   INT32 ret;
 
   int task_status = type;
@@ -312,17 +312,17 @@ static INT32 demoAppTask(INT32 type, INT32 param1, INT32 param2)
       task_status = APPLICATION_EXIT;
       break;
     }
-    lwm2mUserData->objID = M2MB_LWM2M_LIGHT_CONTROL_OBJ_ID;
+    lwm2mUserData->objID = LWM2M_LIGHT_CONTROL_OBJ_ID;
 
 
     INT16 instances[] = {0, 1, 2};
-    LWM2M_OBJ_REG_T obj = {M2MB_LWM2M_LIGHT_CONTROL_OBJ_ID, 3, instances };
+    LWM2M_OBJ_REG_T obj = {LWM2M_LIGHT_CONTROL_OBJ_ID, 3, instances };
 
     /* Check XML file*/
-    AZX_LOG_INFO("Looking for <%s> file..\r\n", OBJECT_XML_NAME);
-    if( 0 != check_xml_file(OBJECT_XML_NAME) )
+    AZX_LOG_INFO("Looking for <%s> file..\r\n", LWM2M_LIGHT_OBJECT_XML_NAME);
+    if( 0 != check_xml_file(LWM2M_LIGHT_OBJECT_XML_NAME) )
     {
-      AZX_LOG_CRITICAL("%s file is not present in XML folder!\r\n", OBJECT_XML_NAME);
+      AZX_LOG_CRITICAL("%s file is not present in XML folder!\r\n", LWM2M_LIGHT_OBJECT_XML_NAME);
       task_status = APPLICATION_EXIT;
       break;
     }
@@ -351,11 +351,11 @@ static INT32 demoAppTask(INT32 type, INT32 param1, INT32 param2)
     mon.action = M2MB_LWM2M_MON_ENABLE;
 
     M2MB_LWM2M_OBJ_URI_T uri_mon = {
-      M2MB_LWM2M_URI_3_FIELDS, 			// UINT8  uriLen;
-      M2MB_LWM2M_LIGHT_CONTROL_OBJ_ID, 	// UINT16 obj;
-      0, 								// UINT16 objInst;
-      0, 								// UINT16 resource;
-      0									// UINT16 resourceInst;
+      M2MB_LWM2M_URI_3_FIELDS,       // UINT8  uriLen;
+      LWM2M_LIGHT_CONTROL_OBJ_ID,   // UINT16 obj;
+      0,                 // UINT16 objInst;
+      0,                 // UINT16 resource;
+      0                  // UINT16 resourceInst;
     };
 
     AZX_LOG_INFO( "Register monitor resources\r\n");
@@ -413,14 +413,11 @@ static INT32 demoAppTask(INT32 type, INT32 param1, INT32 param2)
 
 /* Global functions =============================================================================*/
 
-M2MB_RESULT_E closeAllGPIO	( void )
+M2MB_RESULT_E closeAllGPIO  ( void )
 {
-  LIGHT_CONTROL_OBJ_INSTANCE_S *lightObjs;
-  if (getLightControlObjTable(&lightObjs) < 0)
-  {
-    AZX_LOG_ERROR("Cannot get the objs table!\r\n");
-  }
-
+  LIGHT_CONTROL_OBJ_INSTANCE_S *lightObjs = NULL;
+  getLightControlObjTable(&lightObjs);
+  
   int error = 0;
 
   for (; lightObjs->index != -1; lightObjs++)
@@ -444,7 +441,7 @@ M2MB_RESULT_E closeAllGPIO	( void )
 }
 
 
-M2MB_RESULT_E restoreGpio	( void )
+M2MB_RESULT_E restoreGpio  ( void )
 {
   MEM_W data_buffer[256] = {0};
   M2MB_RESULT_E retVal;
@@ -457,16 +454,14 @@ M2MB_RESULT_E restoreGpio	( void )
 
 
   /* Fill resource URI with required parameters */
-  uri.obj = M2MB_LWM2M_LIGHT_CONTROL_OBJ_ID;
+  uri.obj = LWM2M_LIGHT_CONTROL_OBJ_ID;
   uri.resourceInst = 0;
   uri.uriLen = M2MB_LWM2M_URI_3_FIELDS;
   uri.resource = LIGHT_CONTROL_OBJ_ON_OFF_ID;
 
-  LIGHT_CONTROL_OBJ_INSTANCE_S *lightObjs;
-  if (getLightControlObjTable(&lightObjs) < 0)
-  {
-    AZX_LOG_ERROR("Cannot get the objs table!\r\n");
-  }
+  LIGHT_CONTROL_OBJ_INSTANCE_S *lightObjs = NULL;
+  getLightControlObjTable(&lightObjs);
+  
 
   M2MB_LWM2M_HANDLE lwm2mHandle = getLwM2mHandle();
   M2MB_OS_EV_HANDLE eventsHandleLwm2m = getEventHandle();
@@ -521,13 +516,9 @@ M2MB_RESULT_E restoreGpio	( void )
 
 M2MB_RESULT_E setGpio(UINT16 index, INT32 v)
 {
-  LIGHT_CONTROL_OBJ_INSTANCE_S *instance;
-
-  if (getLightControlObjTable(&instance) < 0)
-  {
-    AZX_LOG_ERROR("Cannot get the objs table!\r\n");
-  }
-
+  LIGHT_CONTROL_OBJ_INSTANCE_S *instance = NULL;
+  getLightControlObjTable(&instance);
+  
   AZX_LOG_TRACE("index = %d, value = %d\r\n", index, v);
   AZX_LOG_TRACE("instance.index = %d, instance->fd = %d, pin = %d\r\n",
   instance[index].index, instance[index].fd, instance[index].pin);
@@ -540,15 +531,12 @@ M2MB_RESULT_E setGpio(UINT16 index, INT32 v)
 
 UINT8 gpioInit(void)
 {
+  LIGHT_CONTROL_OBJ_INSTANCE_S *lightObjs = NULL;
 
-  LIGHT_CONTROL_OBJ_INSTANCE_S *lightObjs;    
 
-
-#if 1	/* only for debug */
-  if (getLightControlObjTable(&lightObjs) < 0)
-  {
-    AZX_LOG_ERROR("Cannot get the objs table!\r\n");
-  }
+#if 1  /* only for debug */
+  getLightControlObjTable(&lightObjs);
+  
   for (; lightObjs->index != -1; lightObjs++)
   {
     INT32 pin = getGpioPinByIndex(lightObjs->index);
@@ -557,10 +545,8 @@ UINT8 gpioInit(void)
 #endif
 
 
-  if (getLightControlObjTable(&lightObjs) < 0)
-  {
-    AZX_LOG_ERROR("Cannot get the objs table!\r\n");
-  }
+  getLightControlObjTable(&lightObjs);
+  
   for (; lightObjs->index != -1; lightObjs++)
   {
     INT32 fd;
@@ -570,14 +556,14 @@ UINT8 gpioInit(void)
     if (ret)
     {
       AZX_LOG_CRITICAL("Cannot set GPIO descriptors <%d>!\r\n", lightObjs->pin);
-      return -1;
+      return 1;
     }
 
     fd = getGpioDescriptor(lightObjs->index);
     if (fd == -1)
     {
       AZX_LOG_ERROR("GPIO pin is not valid!\r\n");
-      return -1;
+      return 1;
     }
 
     lightObjs->fd = fd;

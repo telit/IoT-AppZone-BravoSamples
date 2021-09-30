@@ -72,7 +72,7 @@ int close_gpio( int *pin )
 /*-----------------------------------------------------------------------------------------------*/
 int open_gpio( int pin )
 {
-  INT32 ret;
+  INT32 ret = -1;
   char path[32];
   memset( path, 0, sizeof( path ) );
   sprintf( path, "/dev/GPIO%d", pin );
@@ -96,33 +96,29 @@ int open_gpio( int pin )
                                             M2MB_GPIO_IOCTL_INIT_INTR, ( UINT32 )NULL ) /*enable interrupts*/
                                );
 
-    if( ret == -1 )
+    if( ret != -1 )
     {
-      return -1;
-    }
-    else
-    {
-      return 0;
+      ret = 0;
     }
   }
   else
   {
-    return 1;
+    ret = 1;
   }
 
-  return 0;
+  return ret;
 }
 
 /*-----------------------------------------------------------------------------------------------*/
 int open_LED( int index )
 {
-  INT32 ret;
+  INT32 ret = -1;
   char path[32];
   memset( path, 0, sizeof( path ) );
 
   if (index < 0 || index > 3)
   {
-    return -1;
+    return ret;
   }
 
   sprintf( path, "/dev/GPIO%d", LED_GPIOS[index] );
@@ -137,20 +133,17 @@ int open_LED( int index )
                                             M2MB_GPIO_IOCTL_SET_PULL, M2MB_GPIO_PULL_DOWN,          /*Set pull configuration as pull down*/
                                             M2MB_GPIO_IOCTL_SET_DRIVE, M2MB_GPIO_MEDIUM_DRIVE )      /*Pull drive set to medium*/
                                );
-
-    if( ret == -1 )
+    if( ret != -1 )
     {
-      return -1;
+      ret = 0;
     }
-
-    return 0;
   }
   else
   {
-    return 1;
+    ret = 1;
   }
 
-  return 0;
+  return ret;
 }
 
 /*-----------------------------------------------------------------------------------------------*/

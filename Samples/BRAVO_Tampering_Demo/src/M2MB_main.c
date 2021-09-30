@@ -129,9 +129,9 @@ static void sensors_tamper_callback( bhy_data_generic_t *sensor_data, bhy_virtua
 {
   int16_t activity = sensor_data->data_scalar_s16.data;
   float time_stamp = ( float )( bhy_system_timestamp ) / TICKS_IN_ONE_SECOND;
-  
+
   BHI_TAMPER_STATUS_E status = STATUS_INVALID;
-  
+
   write_LED( M2MB_GPIO_HIGH_VALUE );
 
 
@@ -286,7 +286,7 @@ static void demo_sensor( void )
   /* firmware, you need to contact your local FAE of Bosch Sensortec. */
   //bhy_read_parameter_page(BHY_PAGE_2, PAGE2_CUS_FIRMWARE_VERSION, (uint8_t*)&bhy_cus_version, sizeof(struct cus_version_t));
   //DEBUG("cus version base:%d major:%d minor:%d\n", bhy_cus_version.base, bhy_cus_version.major, bhy_cus_version.minor);
-  
+
   /* enables the activity recognition and assigns the callback */
   bhy_enable_virtual_sensor( VS_TYPE_ACTIVITY_RECOGNITION, VS_NON_WAKEUP, 1, 0, VS_FLUSH_NONE, 0, 0 );
   bhy_install_sensor_callback( VS_TYPE_ACTIVITY_RECOGNITION, VS_NON_WAKEUP, sensors_tamper_callback );
@@ -301,7 +301,7 @@ static void demo_sensor( void )
   azx_sleep_ms( 100 );
   write_LED( M2MB_GPIO_LOW_VALUE );
   azx_sleep_ms( 100 );
-  
+
   AZX_LOG_INFO( "System is now monitoring activity.\r\n" );
   /* wait for the push-button to be pressed */
 
@@ -379,10 +379,10 @@ void M2MB_main( int argc, char **argv )
 {
   ( void )argc;
   ( void )argv;
-  
+
   INT16 instances[] = {0};
   LWM2M_OBJ_REG_T obj = {TAMPERING_OBJ_ID, 1, instances };
-	
+
   /* SET output channel */
   AZX_LOG_INIT();
   AZX_LOG_INFO( "Starting Tampering Demo app. This is v%s built on %s %s.\r\n",

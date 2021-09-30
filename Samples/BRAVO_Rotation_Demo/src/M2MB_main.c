@@ -12,7 +12,7 @@
   @description
     Rotation Demo application. Debug prints on MAIN UART
   @version
-    1.0.2
+    1.0.3
   @note
     Start of Appzone: Entry point
     User code entry is in function M2MB_main()
@@ -296,7 +296,7 @@ void trace_log( const char *fmt, ... )
   va_start( arg, fmt );
   vsnprintf( log_buffer, sizeof( log_buffer ), fmt, arg );
   va_end( arg );
-  AZX_LOG_INFO( log_buffer );
+  AZX_LOG_INFO( "%s", log_buffer );
 }
 
 /*-----------------------------------------------------------------------------------------------*/
