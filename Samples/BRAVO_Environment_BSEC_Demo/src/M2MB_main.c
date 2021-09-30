@@ -66,7 +66,7 @@
    Bosch device
 */
 #define INT_GPIO_PIN_NUM 6
-#define LED_INDEX_NUM 2 			  /* GPIO 10 */
+#define LED_INDEX_NUM 2         /* GPIO 10 */
 
 
 #define BME680_W_SELF_TEST_FAILED 3
@@ -224,6 +224,7 @@ static void state_save( const uint8_t *state_buffer, uint32_t length )
 /*-----------------------------------------------------------------------------------------------*/
 static uint32_t config_load( uint8_t *config_buffer, uint32_t n_buffer )
 {
+  uint32_t ret = 0;
   // ...
   // Load a library config from non-volatile memory, if available.
   //
@@ -233,15 +234,15 @@ static uint32_t config_load( uint8_t *config_buffer, uint32_t n_buffer )
   if( n_buffer < sizeof( bsec_config_iaq ) )
   {
     memcpy( config_buffer, bsec_config_iaq, n_buffer );
-    return n_buffer;
+    ret = n_buffer;
   }
   else
   {
     memcpy( config_buffer, bsec_config_iaq, sizeof( bsec_config_iaq ) );
-    return sizeof( bsec_config_iaq );
+    ret = sizeof( bsec_config_iaq );
   }
 
-  return 0;
+  return ret;
 }
 
 

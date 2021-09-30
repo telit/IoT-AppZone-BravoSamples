@@ -13,7 +13,7 @@
     m2mb_types.h
 
   @author
-		FabioPi
+    FabioPi
   @date
     01/12/2020
  */
@@ -434,6 +434,7 @@ static void state_save( const uint8_t *state_buffer, uint32_t length )
 /*-----------------------------------------------------------------------------------------------*/
 static uint32_t config_load( uint8_t *config_buffer, uint32_t n_buffer )
 {
+  uint32_t ret = 0;
   // ...
   // Load a library config from non-volatile memory, if available.
   //
@@ -443,15 +444,15 @@ static uint32_t config_load( uint8_t *config_buffer, uint32_t n_buffer )
   if( n_buffer < sizeof( bsec_config_iaq ) )
   {
     memcpy( config_buffer, bsec_config_iaq, n_buffer );
-    return n_buffer;
+    ret = n_buffer;
   }
   else
   {
     memcpy( config_buffer, bsec_config_iaq, sizeof( bsec_config_iaq ) );
-    return sizeof( bsec_config_iaq );
+    ret = sizeof( bsec_config_iaq );
   }
 
-  return 0;
+  return ret;
 }
 
 
@@ -710,7 +711,7 @@ void trace_log( const char *fmt, ... )
   va_start( arg, fmt );
   vsnprintf( log_buffer, sizeof( log_buffer ), fmt, arg );
   va_end( arg );
-  AZX_LOG_INFO( log_buffer );
+  AZX_LOG_INFO( "%s", log_buffer );
 }
 
 /* Global functions =============================================================================*/

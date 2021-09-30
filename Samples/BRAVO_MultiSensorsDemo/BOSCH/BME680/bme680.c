@@ -619,7 +619,7 @@ int8_t bme680_set_sensor_mode(struct bme680_dev *dev)
 int8_t bme680_get_sensor_mode(struct bme680_dev *dev)
 {
 	int8_t rslt;
-	uint8_t mode;
+	uint8_t mode = 0;
 
 	/* Check for null pointer in the device structure*/
 	rslt = null_ptr_check(dev);

@@ -4,7 +4,7 @@
 
 
 
-Package Version: **1.0.7**
+Package Version: **1.0.8**
 
 Firmware Version: **30.10.XX9**
 
@@ -74,94 +74,7 @@ The applications code follow the structure below:
 * `Makefile.in`: customization of the Make process
 
 
-##Applications 
-
-
-### Bravo Environment demo
-
-
-
-**Features**
-
----
-
-- Connect to LWM2M Portal
-- Retrieve environment information with BSEC library sensor
-
----
-
-#### Prerequisites on the module
-
-This application requires the file **object_26251.xml** (provided) to be stored into module's `/mod/` folder, along with the application binary itself.
-
-To load it, use 
-
-`AT#M2MWRITE=/mod/object_26251.xml,1971`
-
-And at prompt, send the file content in raw mode. 
-
-#### Prerequisites on the OneEdge Portal
-
-This application requires the **object_26251.xml** content to be stored in your OneEdge organization object registry. The latter can be accessed from the link https://<server_url>/lwm2m/object_registry
-where <server_url> could be for example `portal-dev.telit.com`. open the xml file in a notepad tool, select all the content and copy it. Then, in the object registry webpage, press "New Object" button on the right and paste the content of the xml file, then press Add button.
-
-Now from Developer webpage, go in **Thing Definitions** page from the list on the left and press `Import` button on the right. Press `Attach File` and provide `json/bravo_EnvironmentalDemo_thing_def.json` from the project root, then press `Import`.
-
-Again from the Developer webpage, select **Device Profiles**, `Import` button, `Attach File` and provide `json/bravo_EnvironmentalDemo_device_profile.json`, then press `Import`.
-
-
-** External Libraries **
-
-To build the application it is required to put `libalgobsec.ar` file into the project's BOSCH/BSEC folder. The library can be retrieved at the link
-https://www.bosch-sensortec.com/software-tools/software/bsec/ . Download BSEC 1.4.7.4 version archive, then extract the library `libalgobsec.a` from the ZIP file and rename as `libalgobsec.ar`. It can be found in the directory
-/BSEC_1.4.7.4_Generic_Release/algo/normal_version/bin/gcc/Cortex_A7/
-
-
----
-
-
-
-Environment Demo application. Debug prints on **MAIN UART**
-
-
-
-
-### Bravo LED demo
-
-
-
-**Features**
-
----
-
-- Connect to LWM2M Portal
-- Register the instances for LEDs
-- React to value modification of object 3311 resource 5850 (On/Off) value from the OneEdge portal 
-- Restore LEDs status at startup according to the LWM2M values
-
----
-
-#### Prerequisites
-
-This application requires the file **object_3311.xml** (provided) to be stored into module's `/mod/` folder, along with the application binary itself.
-
-To load it, use 
-
-`AT#M2MWRITE=/mod/object_3311.xml,3734`
-
-And at prompt, send the file content in raw mode. 
-
-#### Prerequisites on the OneEdge Portal
-
-This application requires the **object_3311.xml** content to be stored in your OneEdge organization object registry. The latter can be accessed from the link https://<server_url>/lwm2m/object_registry
-where <server_url> could be for example `portal-dev.telit.com`. open the xml file in a notepad tool, select all the content and copy it. Then, in the object registry webpage, press "New Object" button on the right and paste the content of the xml file, then press Add button.
-
----
-
-
-LED management through IPSO object 3311 Demo application. Debug prints on **MAIN UART**
-
-
+## Applications 
 
 
 ### Bravo Multi Sensors demo
@@ -215,7 +128,7 @@ MultiSensors Demo application. Debug prints on **MAIN UART**
 
 
 
-### Bravo Rotation demo
+### Bravo LwM2M Time Series demo
 
 
 
@@ -224,35 +137,50 @@ MultiSensors Demo application. Debug prints on **MAIN UART**
 ---
 
 - Connect to LWM2M Portal
-- Retrieve rotation information from BMI160 sensor
-- Update portal about current status (X,Y,Z,W and accuracy values)
+- Retrieve environment information with BSEC library sensor, Tampering and 3D vector rotation with BHI library sensors
+- Push data to OneEdge portal as time series using Opaque resources with dedicated objects
 
 ---
 
-#### Prerequisites
+#### Prerequisites on the module
 
-This application requires the file **object_26250.xml** (provided) to be stored into module's `/mod/` folder, along with the application binary itself.
+This application requires the files **object_32001.xml** and **object_32002.xml** (provided) to be stored into module's `/XML/` folder, along with the application binary itself.
 
-To load it, use 
+To load them, use 
 
-`AT#M2MWRITE=/mod/object_26250.xml,2249`
+`AT#M2MWRITE=/XML/object_32001.xml,2272`
+`AT#M2MWRITE=/XML/object_32002.xml,2365`
 
-And at prompt, send the file content in raw mode. 
+
+
+And at each prompt, send the file content in raw mode.
 
 #### Prerequisites on the OneEdge Portal
 
-This application requires the **object_26250.xml** content to be stored in your OneEdge organization object registry. The latter can be accessed from the link https://<server_url>/lwm2m/object_registry
-where <server_url> could be for example `portal-dev.telit.com`. open the xml file in a notepad tool, select all the content and copy it. Then, in the object registry webpage, press "New Object" button on the right and paste the content of the xml file, then press Add button.
+Please refer to the [Time Series App Note](https://github.com/telit/oneedge-projects-resources/blob/main/use-cases/time-series/Docs/80654NT11932A_OneEdge_Use_Case_Time-series_r0.pdf)
 
-Now from Developer webpage, go in **Thing Definitions** page from the list on the left and press `Import` button on the right. Press `Attach File` and provide `json/bravo_3D-RotationDemo_thing_def.json` from the project root, then press `Import`.
 
-Again from the Developer webpage, select **Device Profiles**, `Import` button, `Attach File` and provide `json/bravo_3D-RotationDemo_device_profile.json`, then press `Import`.
+### Requirements
 
+**External Libraries**
+
+To build the application it is required to put `libalgobsec.ar` file into the project's BOSCH/BSEC folder. The library can be retrieved at the link
+https://www.bosch-sensortec.com/software-tools/software/bsec/ . Download BSEC 1.4.7.4 version archive, then extract the library `libalgobsec.a` from the ZIP file and rename as `libalgobsec.ar`. It can be found in the directory
+/BSEC_1.4.7.4_Generic_Release/algo/normal_version/bin/gcc/Cortex_A7/
+
+#### Simulated data
+To run the code on a generic ME910C1 device, it is possible to build the code disabling the Bosch related functionalities. To do so, please refer to [Makefile.in](Makefile.in) file and edit the BOSCH_BSEC variable as below.
+
+```
+BOSCH_BSEC = 0
+```
+This will disable all Bosch dependencies and build the app with a simplified logic, simulating sensors data.
 
 ---
 
 
-Rotation Demo application. Debug prints on **MAIN UART**
+
+MultiSensors Demo application. Debug prints on **MAIN UART**
 
 
 
@@ -296,5 +224,134 @@ Lastly, from the Developer webpage, select **Triggers**, `Actions` menu on the r
 
 
 Tampering Demo application. Debug prints on **MAIN UART**
+
+
+
+
+### Bravo LED demo
+
+
+
+**Features**
+
+---
+
+- Connect to LWM2M Portal
+- Register the instances for LEDs
+- React to value modification of object 3311 resource 5850 (On/Off) value from the OneEdge portal 
+- Restore LEDs status at startup according to the LWM2M values
+
+---
+
+#### Prerequisites
+
+This application requires the file **object_3311.xml** (provided) to be stored into module's `/mod/` folder, along with the application binary itself.
+
+To load it, use 
+
+`AT#M2MWRITE=/mod/object_3311.xml,3734`
+
+And at prompt, send the file content in raw mode. 
+
+#### Prerequisites on the OneEdge Portal
+
+This application requires the **object_3311.xml** content to be stored in your OneEdge organization object registry. The latter can be accessed from the link https://<server_url>/lwm2m/object_registry
+where <server_url> could be for example `portal-dev.telit.com`. open the xml file in a notepad tool, select all the content and copy it. Then, in the object registry webpage, press "New Object" button on the right and paste the content of the xml file, then press Add button.
+
+---
+
+
+LED management through IPSO object 3311 Demo application. Debug prints on **MAIN UART**
+
+
+
+
+### Bravo Environment demo
+
+
+
+**Features**
+
+---
+
+- Connect to LWM2M Portal
+- Retrieve environment information with BSEC library sensor
+
+---
+
+#### Prerequisites on the module
+
+This application requires the file **object_26251.xml** (provided) to be stored into module's `/mod/` folder, along with the application binary itself.
+
+To load it, use 
+
+`AT#M2MWRITE=/mod/object_26251.xml,1971`
+
+And at prompt, send the file content in raw mode. 
+
+#### Prerequisites on the OneEdge Portal
+
+This application requires the **object_26251.xml** content to be stored in your OneEdge organization object registry. The latter can be accessed from the link https://<server_url>/lwm2m/object_registry
+where <server_url> could be for example `portal-dev.telit.com`. open the xml file in a notepad tool, select all the content and copy it. Then, in the object registry webpage, press "New Object" button on the right and paste the content of the xml file, then press Add button.
+
+Now from Developer webpage, go in **Thing Definitions** page from the list on the left and press `Import` button on the right. Press `Attach File` and provide `json/bravo_EnvironmentalDemo_thing_def.json` from the project root, then press `Import`.
+
+Again from the Developer webpage, select **Device Profiles**, `Import` button, `Attach File` and provide `json/bravo_EnvironmentalDemo_device_profile.json`, then press `Import`.
+
+
+**External Libraries**
+
+To build the application it is required to put `libalgobsec.ar` file into the project's BOSCH/BSEC folder. The library can be retrieved at the link
+https://www.bosch-sensortec.com/software-tools/software/bsec/ . Download BSEC 1.4.7.4 version archive, then extract the library `libalgobsec.a` from the ZIP file and rename as `libalgobsec.ar`. It can be found in the directory
+/BSEC_1.4.7.4_Generic_Release/algo/normal_version/bin/gcc/Cortex_A7/
+
+
+---
+
+
+
+Environment Demo application. Debug prints on **MAIN UART**
+
+
+
+
+### Bravo Rotation demo
+
+
+
+**Features**
+
+---
+
+- Connect to LWM2M Portal
+- Retrieve rotation information from BMI160 sensor
+- Update portal about current status (X,Y,Z,W and accuracy values)
+
+---
+
+#### Prerequisites
+
+This application requires the file **object_26250.xml** (provided) to be stored into module's `/mod/` folder, along with the application binary itself.
+
+To load it, use 
+
+`AT#M2MWRITE=/mod/object_26250.xml,2249`
+
+And at prompt, send the file content in raw mode. 
+
+#### Prerequisites on the OneEdge Portal
+
+This application requires the **object_26250.xml** content to be stored in your OneEdge organization object registry. The latter can be accessed from the link https://<server_url>/lwm2m/object_registry
+where <server_url> could be for example `portal-dev.telit.com`. open the xml file in a notepad tool, select all the content and copy it. Then, in the object registry webpage, press "New Object" button on the right and paste the content of the xml file, then press Add button.
+
+Now from Developer webpage, go in **Thing Definitions** page from the list on the left and press `Import` button on the right. Press `Attach File` and provide `json/bravo_3D-RotationDemo_thing_def.json` from the project root, then press `Import`.
+
+Again from the Developer webpage, select **Device Profiles**, `Import` button, `Attach File` and provide `json/bravo_3D-RotationDemo_device_profile.json`, then press `Import`.
+
+
+---
+
+
+Rotation Demo application. Debug prints on **MAIN UART**
 
 

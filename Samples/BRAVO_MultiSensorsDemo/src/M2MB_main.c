@@ -82,9 +82,9 @@ static INT32 demoTaskCb(INT32 type, INT32 param1, INT32 param2)
   
   INT16 instances[] = {0};
   LWM2M_OBJ_REG_T objs[] ={
-	{TAMPERING_OBJ_ID, 1, instances },
-	{ROTATION_OBJ_ID, 1, instances },
-	{ENVIRONMENT_OBJ_ID, 1, instances }
+  {TAMPERING_OBJ_ID, 1, instances },
+  {ROTATION_OBJ_ID, 1, instances },
+  {ENVIRONMENT_OBJ_ID, 1, instances }
   };
 
   /* Open GPIO */

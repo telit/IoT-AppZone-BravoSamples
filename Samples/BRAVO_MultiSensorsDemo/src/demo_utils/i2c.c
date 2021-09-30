@@ -180,16 +180,16 @@ int8_t sensor_i2c_read_16( uint8_t addr, uint8_t reg, uint8_t *p_buf, uint16_t s
     {
       size = size - tmpsize;
       reg = reg + tmpsize;
-      p_buf = p_buf + tmpsize;
+      
       AZX_LOG_TRACE( "Reading Success.\r\n" );
       AZX_LOG_TRACE( "i2c->" );
-
-      for( int i = 1; i < i2c_res; i++ )
+      for( int i = 0; i < i2c_res; i++ )
       {
         AZX_LOG_TRACE( " %02x", p_buf[i] );
       }
-
       AZX_LOG_TRACE( "\r\n" );
+
+      p_buf = p_buf + tmpsize;
     }
     else
     {

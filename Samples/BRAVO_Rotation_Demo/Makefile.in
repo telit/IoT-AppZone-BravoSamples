@@ -15,7 +15,7 @@ LOGS_COLOUR = 0
 
 ## ---- do not touch below this line
 
-SW_VER = 1.0.7
+SW_VER = 1.0.8
 
 CLEAN_BEFORE_BUILD = clean
 
@@ -50,5 +50,14 @@ CPPFLAGS += -I azx/hdr
 OBJS += $(patsubst %.c,%.o,$(wildcard azx/src/*.c))
 CPPFLAGS += -I src/demo_utils
 OBJS += $(patsubst %.c,%.o,$(wildcard src/demo_utils/*.c))
+
+ifneq ($(strip $(BOSCH_BSEC)),0)
+
+CPPFLAGS += -DBOSCH_BSEC=1
+
 CPPFLAGS += -I BOSCH/BHI160/firmware -I BOSCH/BHI160/inc
 OBJS += $(patsubst %.c,%.o,$(wildcard BOSCH/BHI160/src/*.c))
+else
+CPPFLAGS += -DBOSCH_BSEC=0
+endif
+
