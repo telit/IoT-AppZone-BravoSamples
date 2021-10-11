@@ -17,11 +17,11 @@
 
 This application requires the file **object_26250.xml** (provided) to be stored into module's `/mod/` folder, along with the application binary itself.
 
-To load it, use 
+To load it, use
 
 `AT#M2MWRITE=/mod/object_26250.xml,2249`
 
-And at prompt, send the file content in raw mode. 
+And at prompt, send the file content in raw mode.
 
 #### Prerequisites on the OneEdge Portal
 
@@ -33,6 +33,19 @@ Now from Developer webpage, go in **Thing Definitions** page from the list on th
 Again from the Developer webpage, select **Device Profiles**, `Import` button, `Attach File` and provide `json/bravo_3D-RotationDemo_device_profile.json`, then press `Import`.
 
 
----
+#### Local run
+
+For testing purposes, it is possible to build the project without the LWM2M functionality. To do so, edit the [Makefile.in](Makefile.in) file at the line
+
+```
+LWM2M = 1
+```
+
+and set the variable to 0
+
+```
+LWM2M = 0
+```
+
 
 

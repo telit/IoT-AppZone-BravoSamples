@@ -12,7 +12,7 @@
   @description
     MultiSensors Demo application. Debug prints on MAIN UART
   @version
-    1.0.1
+    1.0.2
   @note
     Start of Appzone: Entry point
     User code entry is in function M2MB_main()
@@ -78,15 +78,16 @@ static INT32 demoTaskCb(INT32 type, INT32 param1, INT32 param2)
   (void) type;
   (void) param1;
   (void) param2;
+#ifndef SKIP_LWM2M
   int reboot_needed = 0;
-  
+
   INT16 instances[] = {0};
   LWM2M_OBJ_REG_T objs[] ={
   {TAMPERING_OBJ_ID, 1, instances },
   {ROTATION_OBJ_ID, 1, instances },
   {ENVIRONMENT_OBJ_ID, 1, instances }
   };
-
+#endif
   /* Open GPIO */
   if( open_LED( LED_INDEX_NUM ) != 0 )
   {
@@ -98,6 +99,7 @@ static INT32 demoTaskCb(INT32 type, INT32 param1, INT32 param2)
   azx_sleep_ms( 5000 );
   write_LED( M2MB_GPIO_LOW_VALUE );
 
+#ifndef SKIP_LWM2M
   /* Copy xml file if not exixting */
   if( 0 != check_xml_file( TAMPER_XML_NAME ) )
   {
@@ -182,7 +184,7 @@ static INT32 demoTaskCb(INT32 type, INT32 param1, INT32 param2)
     }
   }
 
-
+#endif
 
   /* Open I2C */
   if( open_I2C() != 0 )
@@ -197,12 +199,15 @@ static INT32 demoTaskCb(INT32 type, INT32 param1, INT32 param2)
     AZX_LOG_ERROR( "cannot open gpio channel.\r\n" );
     return -1;
   }
-
+#ifndef SKIP_LWM2M
   if(oneedge_init( objs, 3, NULL ) != 0)
   {
     AZX_LOG_ERROR("Failed enabling LWM2M!\r\n");
     return -1;
   }
+#else
+  AZX_LOG_INFO( "Will run without LWM2M data publishing\r\n");
+#endif
 
   AZX_LOG_DEBUG("init sensors...\r\n");
   init_sensors();

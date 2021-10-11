@@ -81,8 +81,9 @@
 #include "i2c.h"
 #include "i2c_bme680.h"
 
+#ifndef SKIP_LWM2M
 #include "lwm2m.h"
-
+#endif
 
 #include "sensors_demo.h"
 
@@ -294,8 +295,9 @@ static void sensors_tamper_callback( bhy_data_generic_t *sensor_data, bhy_virtua
   {
     gTAMPER_data.status = status;
     gTAMPER_data.timestamp = time_stamp;
-
+#ifndef SKIP_LWM2M
     update_tamper_LWM2MObject( (int) status );
+#endif
   }
 
   /* activity recognition is not time critical, so let's wait a little bit */
@@ -334,7 +336,9 @@ static void sensors_callback_rotation_vector( bhy_data_generic_t *sensor_data,
 
   if( ( i++ >= 50 ) && is_new_value )
   {
+#ifndef SKIP_LWM2M
     update_rotation_LWM2MObject( w, x, y, z, sensor_data->data_quaternion.estimated_accuracy );
+#endif
     i = 0;
     AZX_LOG_INFO( "------->  w=%f, x=%f, y=%f, z=%f; acc=%d\r\n",
         w, x, y, z, sensor_data->data_quaternion.estimated_accuracy );
@@ -386,23 +390,27 @@ static void bsec_output_ready( int64_t timestamp, float iaq, uint8_t iaq_accurac
   ( void ) static_iaq;
   ( void ) co2_equivalent;
   ( void ) breath_voc_equivalent;
+  
   /* =============
     Please insert system specific code to further process or display the BSEC outputs
     ================*/
+#ifndef SKIP_LWM2M
   static int demult = 0;
+#endif
 
   gENVIRON_data.temperature = temperature;
   gENVIRON_data.humidity = humidity;
   gENVIRON_data.pressure = pressure / 100;
   gENVIRON_data.airQ = iaq;
 
+#ifndef SKIP_LWM2M
   if( demult++ > 2 )
   {
     update_environment_LWM2MObject( temperature, pressure / 100., humidity, ( INT16 )iaq );
     demult = 0;
     AZX_LOG_INFO( "------>" );
   }
-
+#endif
 
   AZX_LOG_INFO( "T %f H %f P %f IAQ %f\r\n", temperature, humidity, pressure / 100., iaq );
 }
