@@ -88,8 +88,9 @@
 #include "i2c.h"
 #include "i2c_bme680.h"
 
+#ifndef SKIP_LWM2M
 #include "lwm2m.h"
-
+#endif
 
 #include "sensors_demo.h"
 

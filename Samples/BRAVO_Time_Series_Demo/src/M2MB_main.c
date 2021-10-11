@@ -12,7 +12,7 @@
   @description
     MultiSensors Demo application. Debug prints on MAIN UART
   @version
-    1.0.1
+    1.0.2
   @note
     Start of Appzone: Entry point
     User code entry is in function M2MB_main()
@@ -53,8 +53,9 @@
 
 #include "gpio.h"
 #include "i2c.h"
+#ifndef SKIP_LWM2M
 #include "lwm2m.h"
-
+#endif
 
 #include "sensors_demo.h"
 
@@ -68,7 +69,12 @@
 #define PRINT_PDU_HEX 1
 #define PRINT_OPAQUE_HEX 0
 
-#define ONE_EDGE 1
+#ifndef SKIP_LWM2M
+  #define ONE_EDGE 1
+#else
+  #define ONE_EDGE 0
+#endif
+
 
 #define DEFAULT_SAMPLE_PERIOD 60000 //60000
 #define DEFAULT_SENDING_PERIOD 300000 //300000
@@ -107,13 +113,16 @@ static M2MB_OS_EV_HANDLE gBoschInitEvH = NULL;
 
 
 static UINT32 gSamplingRate = DEFAULT_SAMPLE_PERIOD;
+#if ONE_EDGE
 static UINT32 gSendingRate = DEFAULT_SENDING_PERIOD;
 
 
 static M2MB_LWM2M_OBJ_URI_T _obj_telit_app_data_uri = { .uriLen = 4,
     .obj = 33205, .objInst = 0, .resource = 0, .resourceInst = 0 };
+#endif
 
 static DATA_BUFFER_T opaque = {0};
+
 /* Local function prototypes ====================================================================*/
 
 static UINT32 get_uptime(void);
@@ -126,9 +135,12 @@ static UINT32 get_uptime(void);
 static INT32 demoTaskCb(INT32 type, INT32 param1, INT32 param2);
 
 static INT32 entryToHexBuf(DATA_ENTRY_T *entry, unsigned char *tmp);
+#if ONE_EDGE
 static INT32 dataSendTaskCb(INT32 type, INT32 param1, INT32 param2);
-static INT32 dataReadTaskCb(INT32 type, INT32 param1, INT32 param2);
 static INT32 lwm2m_monDataTaskCb(INT32 type, INT32 param1, INT32 param2);
+#endif
+
+static INT32 dataReadTaskCb(INT32 type, INT32 param1, INT32 param2);
 static INT32 sensorsInitCB(INT32 res, void *arg);
 /* Static functions =============================================================================*/
 
@@ -172,7 +184,7 @@ static INT32 entryToHexBuf(DATA_ENTRY_T *entry, unsigned char *tmp)
   return 0;
 }
 
-
+#if ONE_EDGE
 static INT32 dataSendTaskCb(INT32 type, INT32 param1, INT32 param2)
 {
   (void) type;
@@ -219,7 +231,7 @@ static INT32 dataSendTaskCb(INT32 type, INT32 param1, INT32 param2)
     m2mb_os_sem_put(opaque.CSSemH);
   }
 }
-
+#endif
 
 static INT32 dataReadTaskCb(INT32 type, INT32 param1, INT32 param2)
 {
@@ -415,6 +427,7 @@ static INT32 dataReadTaskCb(INT32 type, INT32 param1, INT32 param2)
   }
 }
 
+#if ONE_EDGE
 static INT32 lwm2m_monDataTaskCb(INT32 type, INT32 param1, INT32 param2)
 {
   (void) param2;
@@ -491,6 +504,7 @@ static INT32 lwm2m_monDataTaskCb(INT32 type, INT32 param1, INT32 param2)
   return 0;
 
 }
+#endif
 
 static INT32 sensorsInitCB(INT32 res, void *arg)
 {
@@ -511,15 +525,17 @@ static INT32 demoTaskCb(INT32 type, INT32 param1, INT32 param2)
   (void) type;
   (void) param1;
   (void) param2;
-  int reboot_needed = 0;
   INT32 taskId;
 
+#if ONE_EDGE
+  int reboot_needed = 0;
   INT16 instances[] = {0};
 
   LWM2M_OBJ_REG_T objs[] = {
       {TIME_SERIES_METERING_INFO_OBJ_ID, 1, instances },
       {TIME_SERIES_METERING_RATES_OBJ_ID, 1, instances }
   };
+#endif
 
   /* Open GPIO */
   if( open_LED( LED_INDEX_NUM ) != 0 )
@@ -532,6 +548,7 @@ static INT32 demoTaskCb(INT32 type, INT32 param1, INT32 param2)
   azx_sleep_ms( 5000 );
   write_LED( M2MB_GPIO_LOW_VALUE );
 
+#if ONE_EDGE
   /* Copy xml file if not existing */
   if( 0 != check_xml_file( SENDING_OPTS_XML_NAME ) )
   {
@@ -598,6 +615,8 @@ static INT32 demoTaskCb(INT32 type, INT32 param1, INT32 param2)
       return 0;
     }
   }
+#endif
+
 
 #if BOSCH_BSEC
 
@@ -615,6 +634,7 @@ static INT32 demoTaskCb(INT32 type, INT32 param1, INT32 param2)
     AZX_LOG_ERROR( "cannot open gpio channel.\r\n" );
     return -1;
   }
+  
 #if ONE_EDGE
 
   /*skip the instances creation*/
@@ -691,7 +711,8 @@ static INT32 demoTaskCb(INT32 type, INT32 param1, INT32 param2)
     }
   }
 
-
+#else
+  AZX_LOG_INFO( "Will run without LWM2M data publishing\r\n");
 #endif
 
 
@@ -735,7 +756,7 @@ static INT32 demoTaskCb(INT32 type, INT32 param1, INT32 param2)
   {
     return -1;
   }
-
+#if ONE_EDGE
   taskId = azx_tasks_createTask((char*) "read" , AZX_TASKS_STACK_L, 3, AZX_TASKS_MBOX_S, dataSendTaskCb);
   if(taskId > 0)
   {
@@ -745,7 +766,7 @@ static INT32 demoTaskCb(INT32 type, INT32 param1, INT32 param2)
   {
     return -1;
   }
-
+#endif
 
 #if BOSCH_BSEC
   AZX_LOG_DEBUG("Init sensors...\r\n");

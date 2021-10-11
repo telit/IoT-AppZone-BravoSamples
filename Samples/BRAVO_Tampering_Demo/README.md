@@ -17,11 +17,11 @@
 
 This application requires the file **object_26242.xml** (provided) to be stored into module's `/mod/` folder, along with the application binary itself.
 
-To load it, use 
+To load it, use
 
 `AT#M2MWRITE=/mod/object_26242.xml,1358`
 
-And at prompt, send the file content in raw mode. 
+And at prompt, send the file content in raw mode.
 
 #### Prerequisites on the OneEdge Portal
 
@@ -34,6 +34,19 @@ Again from the Developer webpage, select **Device Profiles**, `Import` button, `
 
 Lastly, from the Developer webpage, select **Triggers**, `Actions` menu on the right, `Import` , `Attach File` and provide `json/bravo_TamperDemo_triggers.json`, then press `Import`. Now open the trigger **bravo_TamperDemo_state_trigger** by pressing the View button (the eye icon on the left) and be sure to press the `play` button, and that the trigger status is 'started'.
 
----
+#### Local run
+
+For testing purposes, it is possible to build the project without the LWM2M functionality. To do so, edit the [Makefile.in](Makefile.in) file at the line
+
+```
+LWM2M = 1
+```
+
+and set the variable to 0
+
+```
+LWM2M = 0
+```
+
 
 

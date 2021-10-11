@@ -12,7 +12,7 @@
   @description
     Rotation Demo application. Debug prints on MAIN UART
   @version
-    1.0.3
+    1.0.4
   @note
     Start of Appzone: Entry point
     User code entry is in function M2MB_main()
@@ -53,8 +53,10 @@
 
 #include "gpio.h"
 #include "i2c.h"
-#include "lwm2m.h"
 
+#ifndef SKIP_LWM2M
+#include "lwm2m.h"
+#endif
 
 /* Local defines ================================================================================*/
 
@@ -66,8 +68,9 @@
 
 #define SENSOR_AR_TOUT  100  /* 10 = 1 sec  */
 
+#ifndef SKIP_LWM2M
 #define XML_NAME "object_26250.xml"
-
+#endif
 
 
 
@@ -127,15 +130,16 @@ static void sensors_callback_rotation_vector( bhy_data_generic_t *sensor_data,
   float z = ( float )sensor_data->data_quaternion.z / 16384.0f;
 
   /* emit message only if value is different from previous one and it is new */
-
   if( ( i++ >= 50 ) && is_new_value )
   {
+#ifndef SKIP_LWM2M
     update_rotation_LWM2MObject( w, x, y, z, sensor_data->data_quaternion.estimated_accuracy );
+#endif
     i = 0;
     AZX_LOG_INFO( "-------> x=%f, y=%f, z=%f, w=%f; acc=%d\r\n", 
       x, y, z, w, sensor_data->data_quaternion.estimated_accuracy );  
   }
-  
+
   old_w = sensor_data->data_quaternion.w;
   old_x = sensor_data->data_quaternion.x;
   old_y = sensor_data->data_quaternion.y;
@@ -314,8 +318,11 @@ void M2MB_main( int argc, char **argv )
   ( void )argc;
   ( void )argv;
   
+#ifndef SKIP_LWM2M
   INT16 instances[] = {0};
   LWM2M_OBJ_REG_T obj = {ROTATION_OBJ_ID, 1, instances };
+#endif
+
   /* SET output channel */
   AZX_LOG_INIT();
   AZX_LOG_INFO( "Starting Rotation Demo app. This is v%s built on %s %s.\r\n",
@@ -331,7 +338,8 @@ void M2MB_main( int argc, char **argv )
   write_LED( M2MB_GPIO_HIGH_VALUE );
   azx_sleep_ms( 5000 );
   write_LED( M2MB_GPIO_LOW_VALUE );
-
+  
+#ifndef SKIP_LWM2M
   /* Copy xml file if not exixting */
   if( 0 != check_xml_file( XML_NAME ) )
   {
@@ -374,7 +382,7 @@ void M2MB_main( int argc, char **argv )
       }
     }
   }
-
+#endif 
   /* Open I2C */
   if( open_I2C() != 0 )
   {
@@ -389,11 +397,15 @@ void M2MB_main( int argc, char **argv )
     return;
   }
 
+#ifndef SKIP_LWM2M
   if(oneedge_init( &obj, 1, NULL)  != 0)
   {
     AZX_LOG_ERROR("Failed enabling LWM2M!\r\n");
     return;
   }
-  
+#else
+  AZX_LOG_INFO( "Will run without LWM2M data publishing\r\n");
+#endif
+
   demo_sensor();
 }

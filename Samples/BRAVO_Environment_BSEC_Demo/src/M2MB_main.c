@@ -12,7 +12,7 @@
   @description
     Environment Demo application. Debug prints on MAIN UART
   @version
-    1.0.3
+    1.0.4
   @note
     Start of Appzone: Entry point
     User code entry is in function M2MB_main()
@@ -57,8 +57,10 @@
 #include "gpio.h"
 #include "i2c.h"
 #include "i2c_bme680.h"
-#include "lwm2m.h"
 
+#ifndef SKIP_LWM2M
+#include "lwm2m.h"
+#endif
 
 /* Local defines ================================================================================*/
 
@@ -71,8 +73,9 @@
 
 #define BME680_W_SELF_TEST_FAILED 3
 
+#ifndef SKIP_LWM2M
 #define XML_NAME "object_26251.xml"
-
+#endif
 
 #define MIN_TEMPERATURE INT16_C(0)    /* 0 degree Celsius */
 #define MAX_TEMPERATURE INT16_C(6000) /* 60 degree Celsius */
@@ -189,7 +192,9 @@ static void output_ready( int64_t timestamp, float iaq, uint8_t iaq_accuracy, fl
 
   if( demult++ > 2 )
   {
+#ifndef SKIP_LWM2M
     update_environment_LWM2MObject( temperature, pressure / 100., humidity, ( INT16 )iaq );
+#endif
     demult = 0;
     AZX_LOG_INFO( "------>" );
   }
@@ -266,9 +271,10 @@ void M2MB_main( int argc, char **argv )
   AZX_LOG_INIT();
   AZX_LOG_INFO( "Starting Environmental BSEC Demo. This is v%s built on %s %s.\r\n",
                 VERSION, __DATE__, __TIME__ );
-
+#ifndef SKIP_LWM2M
   INT16 instances[] = {0};
   LWM2M_OBJ_REG_T obj = {ENVIRONMENT_OBJ_ID, 1, instances };
+#endif
   /* Open GPIO */
   if( open_LED( LED_INDEX_NUM ) != 0 )
   {
@@ -279,7 +285,7 @@ void M2MB_main( int argc, char **argv )
   write_LED( M2MB_GPIO_HIGH_VALUE );
   azx_sleep_ms( 5000 );
   write_LED( M2MB_GPIO_LOW_VALUE );
-
+#ifndef SKIP_LWM2M
   /* Copy xml file if not exixting */
   if( 0 != check_xml_file( XML_NAME ) )
   {
@@ -330,8 +336,9 @@ void M2MB_main( int argc, char **argv )
     AZX_LOG_ERROR("Failed enabling LWM2M!\r\n");
     return;
   }
-  
-
+#else
+  AZX_LOG_INFO( "Will run without LWM2M data publishing\r\n");
+#endif
   bsec_get_version( &bsec_version );
   AZX_LOG_INFO( "BSEC Version %d %d %d %d\r\n", bsec_version.major, bsec_version.minor,
                 bsec_version.major_bugfix, bsec_version.minor_bugfix );

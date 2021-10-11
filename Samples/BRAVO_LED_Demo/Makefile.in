@@ -10,12 +10,13 @@ LOGS_LEVEL = DEBUG
 # Enable to add ANSI colours to the logs
 LOGS_COLOUR = 0
 
-
+# Connect to the LWM2M server to send data. If 0, a local run will be done with no data publish
+LWM2M = 1
 # -------------------------
 
 ## ---- do not touch below this line
 
-SW_VER = 1.0.8
+SW_VER = 1.0.9
 
 CLEAN_BEFORE_BUILD = clean
 
@@ -43,6 +44,11 @@ ifneq (,$(filter $(TOOLCHAIN),GCC GCC_LINUX GNUEABI))
 else
   CPPFLAGS += --diag_suppress=111,177,1293
 endif
+
+ifeq ($(strip $(LWM2M)),0)
+  CPPFLAGS += -DSKIP_LWM2M
+endif
+
 # --------------------------------------------------------------------------
 
 

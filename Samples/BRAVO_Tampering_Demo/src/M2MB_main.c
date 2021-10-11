@@ -12,7 +12,7 @@
   @description
     Tampering Demo application. Debug prints on MAIN UART
   @version
-    1.0.2
+    1.0.4
   @note
     Start of Appzone: Entry point
     User code entry is in function M2MB_main()
@@ -51,8 +51,10 @@
 
 #include "gpio.h"
 #include "i2c.h"
-#include "lwm2m.h"
 
+#ifndef SKIP_LWM2M
+#include "lwm2m.h"
+#endif
 
 /* Local defines ================================================================================*/
 
@@ -81,9 +83,9 @@ typedef enum
 #define LED_INDEX_NUM 2      /* GPIO 10 */
 #define SENSOR_AR_TOUT  100  /* 10 = 1 sec */
 
+#ifndef SKIP_LWM2M
 #define XML_NAME "object_26242.xml"
-
-
+#endif
 
 
 #define FIFO_SIZE                      300
@@ -223,8 +225,9 @@ static void sensors_tamper_callback( bhy_data_generic_t *sensor_data, bhy_virtua
 
   if(status != STATUS_INVALID)
   {
-
+#ifndef SKIP_LWM2M
     update_tamper_LWM2MObject( (int) status );
+#endif
   }
 
   /* activity recognition is not time critical, so let's wait a little bit */
@@ -380,8 +383,10 @@ void M2MB_main( int argc, char **argv )
   ( void )argc;
   ( void )argv;
 
+#ifndef SKIP_LWM2M
   INT16 instances[] = {0};
   LWM2M_OBJ_REG_T obj = {TAMPERING_OBJ_ID, 1, instances };
+#endif
 
   /* SET output channel */
   AZX_LOG_INIT();
@@ -398,7 +403,7 @@ void M2MB_main( int argc, char **argv )
   write_LED( M2MB_GPIO_HIGH_VALUE );
   azx_sleep_ms( 5000 );
   write_LED( M2MB_GPIO_LOW_VALUE );
-
+#ifndef SKIP_LWM2M
   /* Copy xml file if not exixting */
   if( 0 != check_xml_file( XML_NAME ) )
   {
@@ -442,6 +447,7 @@ void M2MB_main( int argc, char **argv )
       }
     }
   }
+#endif
 
   /* Open I2C */
   if( open_I2C() != 0 )
@@ -456,11 +462,15 @@ void M2MB_main( int argc, char **argv )
     AZX_LOG_ERROR( "cannot open gpio channel.\r\n" );
     return;
   }
-
+#ifndef SKIP_LWM2M
   if(oneedge_init( &obj, 1, NULL) != 0)
   {
     AZX_LOG_ERROR("Failed enabling LWM2M!\r\n");
     return;
   }
+#else
+  AZX_LOG_INFO( "Will run without LWM2M data publishing\r\n");
+#endif
+
   demo_sensor();
 }
