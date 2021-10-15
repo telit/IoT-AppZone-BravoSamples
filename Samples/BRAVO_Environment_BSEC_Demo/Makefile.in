@@ -16,7 +16,7 @@ LWM2M = 1
 
 ## ---- do not touch below this line
 
-SW_VER = 1.0.9
+SW_VER = 1.0.10
 
 CLEAN_BEFORE_BUILD = clean
 

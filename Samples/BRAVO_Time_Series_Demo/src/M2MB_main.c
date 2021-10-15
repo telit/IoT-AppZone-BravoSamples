@@ -10,7 +10,7 @@
   @details
 
   @description
-    MultiSensors Demo application. Debug prints on MAIN UART
+    Time Series Demo application. Debug prints on MAIN UART
   @version
     1.0.2
   @note
