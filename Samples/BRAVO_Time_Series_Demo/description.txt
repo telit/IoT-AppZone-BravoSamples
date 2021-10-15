@@ -1,1 +1,1 @@
-MultiSensors Demo application. Debug prints on MAIN UART
+Time Series Demo application. Debug prints on MAIN UART

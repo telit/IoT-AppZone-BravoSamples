@@ -28,8 +28,7 @@ And at each prompt, send the file content in raw mode.
 
 #### Prerequisites on the OneEdge Portal
 
-Please refer to the [Time Series App Note](https://github.com/telit/oneedge-projects-resources/blob/main/use-cases/time-series/Docs/80654NT11932A_OneEdge_Use_Case_Time-series_r0.pdf)
-
+Please refer to the **80654NT11932A_OneEdge_Use_Case_Time-series** App Note. It can be obtained from the Telit [Download Zone](https://www.telit.com/support-training/download-zone/) or by requesting it to ts-oneedge@telit.com.
 
 
 #### Simulated data
