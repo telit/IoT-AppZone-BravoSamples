@@ -11,6 +11,8 @@ All samples are inside `Samples` folder, where each one has its own subfolder, c
 
 ## Usage
 
+First of all make sure you have downloaded and installed [IoT AppZone IDE v5](https://bit.ly/3dWOYYO), as this guide refers to developing and building with Telit IoT AppZone IDE.
+
 The master branch will always contain the latest sample apps package version. Older ones will be available through tags.
 
 To use a specific sample app, first download the repository content by pressing the green button "Code" and selecting "Download ZIP".
