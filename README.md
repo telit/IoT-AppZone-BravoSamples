@@ -56,6 +56,20 @@ Done! The project is now updated with the latest sample app source code availabl
 
 Please refer to the specific sample README.md file for additional build requirements.
 
+### Build and Deploy
+
+For additional info about building and deploying an application, please refer to the following links:
+
+[Build](https://s3.amazonaws.com/site_support/Telit/AppZone-SDK/User+Guides+AppZone+2.0/az-c-m2mb-ug-r1/index.html#!Documents/buildapplications.htm)
+
+[Deploy](https://s3.amazonaws.com/site_support/Telit/AppZone-SDK/User+Guides+AppZone+2.0/az-c-m2mb-ug-r1/index.html#!Documents/buildapplications.htm)
+
+**Important!**
+
+When building a project, please be sure that the module Firmware and IDE plugin versions are aligned.
+
+![](./pics/plugin_version.png)
+
 ---
 
 For further info, please go on Telit's cellular modules product webpage https://www.telit.com/m2m-iot-products/cellular-modules/standard-industrial-grade/
