@@ -50,6 +50,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <limits.h>
 #include <math.h>
 
 #include "m2mb_types.h"
@@ -62,6 +63,7 @@
 
 #include "m2mb_fs_posix.h"
 #include "m2mb_fs_errno.h"
+#include "m2mb_wDog.h"
 
 #include "azx_log.h"
 #include "azx_utils.h"
@@ -88,11 +90,12 @@
 #include "sensors_demo.h"
 
 
-/* Local defines ================================================================================*/
-/*
-   Bosch device
- */
 
+extern INT32 bsens_taskId;
+/* Local defines ================================================================================*/
+#define WAKE_UP_TICKS 10       //to be used in m2mb_wDog_enable
+#define CTRL_TICKS_TO_REBOOT 6 //to be used in m2mb_wDog_enable
+#define WD_TOUT_COUNT 3        //to be used in m2mb_wDog_addTask
 
 /* Local typedefs ===============================================================================*/
 /* Local statics ================================================================================*/
@@ -104,6 +107,17 @@ static uint8_t fifo[FIFO_SIZE];
 static BSENS_ENV_T gENVIRON_data;
 static BSENS_TAMPER_T gTAMPER_data;
 static BSENS_3DVECT_T g3DVECT_data;
+
+
+
+#ifdef BSEC_THREAD
+INT32 bsecTaskId;
+#endif
+
+M2MB_WDOG_HANDLE h_wDog;
+UINT32 wd_tick_s;
+UINT32 wd_kick_delay_ms;
+
 
 
 /* Local function prototypes ====================================================================*/
@@ -192,11 +206,54 @@ static void state_save( const uint8_t *state_buffer, uint32_t length );
 static uint32_t config_load( uint8_t *config_buffer, uint32_t n_buffer );
 
 
+#ifdef BSEC_THREAD
 static INT32 bsec_loop_taskCB(INT32 type, INT32 param1, INT32 param2);
+#endif
+
+
+#ifndef BSEC_THREAD
+/*!
+ * @brief       custom version of bsec_iot_loop (defined in bsec_integration.c).
+
+                it has no while loop, so it can be called to run only once, but it is up to caller to define when it must be executed next.
+                the sleep function pointer can be used to provide caller with the amount of time that needs to pass before next execution
+ *
+ * @param[in]   get_timestamp_us    pointer to the system specific timestamp derivation function
+ * @param[in]   output_ready        pointer to the function processing obtained BSEC outputs
+ * @param[in]   state_save          pointer to the system-specific state save function
+ * @param[in]   save_intvl          interval at which BSEC state should be saved (in samples)
+ *
+ * @return      none
+ */
+static void bsec_iot_custom_loop(get_timestamp_us_fct get_timestamp_us, output_ready_fct output_ready,
+                    state_save_fct state_save, uint32_t save_intvl);
+#endif
+
+static void WDcallback(M2MB_WDOG_HANDLE hDog, M2MB_WDOG_IND_E wDog_event,UINT16 resp_size, void *resp_struct, void *userdata);
+
 /*-----------------------------------------------------------------------------------------------*/
 
 
 /* Static functions =============================================================================*/
+/**
+   @brief           returns the current uptime in ms as an unsigned long long int
+
+   @return          number of milliseconds elapsed from startup
+*/
+static UINT64 get_u64_uptime_ms(void)
+{
+
+  UINT32 sysTicks = m2mb_os_getSysTicks();
+
+  FLOAT32 ms_per_tick = m2mb_os_getSysTickDuration_ms();
+
+  return (UINT64) (sysTicks * ms_per_tick); //milliseconds
+}
+
+/*-----------------------------------------------------------------------------------------------*/
+
+
+/*-----------------------------------------------------------------------------------------------*/
 
 static void sensors_tamper_callback( bhy_data_generic_t *sensor_data, bhy_virtual_sensor_t sensor_id )
 {
@@ -300,14 +357,10 @@ static void sensors_tamper_callback( bhy_data_generic_t *sensor_data, bhy_virtua
 #endif
   }
 
-  /* activity recognition is not time critical, so let's wait a little bit */
-  //    int tamper_data = 1;
-  //    updateLWM2MObject(_obj_tamper_uri, &tamper_data, sizeof(int));
-  //    sensor_ar_timer = SENSOR_AR_TOUT;
-  azx_sleep_ms( 200 );
   write_LED( M2MB_GPIO_LOW_VALUE );
 }
 
+/*-----------------------------------------------------------------------------------------------*/
 
 static void sensors_callback_rotation_vector( bhy_data_generic_t *sensor_data,
     bhy_virtual_sensor_t sensor_id )
@@ -334,7 +387,7 @@ static void sensors_callback_rotation_vector( bhy_data_generic_t *sensor_data,
   /* emit message only if value is different from previous one and it is new */
 
 
-  if( ( i++ >= 50 ) && is_new_value )
+  if( ( i++ >= (5 * ROTATION_VECTOR_SAMPLE_RATE) ) && is_new_value )
   {
 #ifndef SKIP_LWM2M
     update_rotation_LWM2MObject( w, x, y, z, sensor_data->data_quaternion.estimated_accuracy );
@@ -359,10 +412,9 @@ static void sensors_callback_rotation_vector( bhy_data_generic_t *sensor_data,
 /*-----------------------------------------------------------------------------------------------*/
 static void timestamp_callback( bhy_data_scalar_u16_t *new_timestamp )
 {
-  //AZX_LOG_DEBUG("new timestamp for id %u: 0x%08X\r\n", new_timestamp->sensor_id, new_timestamp->data);
   /* updates the system timestamp */
   bhy_update_system_timestamp( new_timestamp, &bhy_system_timestamp );
-  //AZX_LOG_DEBUG("updated timestamp: %u\r\n", bhy_system_timestamp);
+
 }
 
 
@@ -370,8 +422,7 @@ static void timestamp_callback( bhy_data_scalar_u16_t *new_timestamp )
 
 static int64_t get_timestamp_us( void )
 {
-  int64_t system_current_time = ( int64_t )m2mb_os_getSysTicks() * 10000L;
-  return system_current_time;
+  return get_u64_uptime_ms() * 1000L;
 }
 
 /*-----------------------------------------------------------------------------------------------*/
@@ -464,7 +515,58 @@ static uint32_t config_load( uint8_t *config_buffer, uint32_t n_buffer )
 }
 
 
+/*-----------------------------------------------------------------------------------------------*/
+static void WDcallback(M2MB_WDOG_HANDLE hDog, M2MB_WDOG_IND_E wDog_event,UINT16 resp_size, void *resp_struct, void *userdata)
+{
+	(void)hDog;
+	(void)resp_size;
+	(void)resp_struct;
 
+  M2MB_OS_TASK_HANDLE TaskWD_H = (M2MB_OS_TASK_HANDLE)userdata;
+
+	switch (wDog_event)
+	{
+		case M2MB_WDOG_TIMEOUT_IND:
+		{
+			AZX_LOG_INFO("Watchdog expired!\r\n");
+			//kill the task and restart it.
+      AZX_LOG_INFO("Terminate task and restart it.\r\n");
+      m2mb_os_taskTerminate(TaskWD_H);
+      m2mb_os_taskRestart(TaskWD_H);
+      AZX_LOG_INFO("Send a message %d\r\n", azx_tasks_sendMessageToTask(bsens_taskId, TASK_REINIT, 0, 0));
+      ;
+		}
+		break;
+
+		default:
+			break;
+	}
+}
+
+
+
+#ifndef BSEC_THREAD
+static UINT64 bsec_sleep_ms_resume_ts = 0;
+/*-----------------------------------------------------------------------------------------------*/
+static void bsec_sleep(UINT32 ms)
+{
+  UINT64 tmp_ts = get_u64_uptime_ms() + ms;
+  if(tmp_ts < bsec_sleep_ms_resume_ts )
+  {
+    /*overflow in internal counter, compute the right amount*/
+    AZX_LOG_ERROR("OVERFLOWING when asking to sleep %u ms! current value: %llu, it would become %llu\r\n", ms, bsec_sleep_ms_resume_ts, tmp_ts);
+    bsec_sleep_ms_resume_ts = (ULONG_LONG_MAX - bsec_sleep_ms_resume_ts) + tmp_ts;
+  }
+  else
+  {
+
+    bsec_sleep_ms_resume_ts = tmp_ts;
+  }
+}
+#endif
+
+/*-----------------------------------------------------------------------------------------------*/
+#ifdef BSEC_THREAD
 static INT32 bsec_loop_taskCB(INT32 type, INT32 param1, INT32 param2)
 {
   (void) type;
@@ -476,30 +578,217 @@ static INT32 bsec_loop_taskCB(INT32 type, INT32 param1, INT32 param2)
   bsec_iot_loop( azx_sleep_ms, get_timestamp_us, bsec_output_ready, state_save, 10000 );
   return 0;
 }
+#endif
+
+/*-----------------------------------------------------------------------------------------------*/
+#ifndef BSEC_THREAD
+/*all defined in bsec_integration.c*/
+extern void bme680_bsec_trigger_measurement(bsec_bme_settings_t *sensor_settings, sleep_fct sleep);
+extern void bme680_bsec_read_data(int64_t time_stamp_trigger, bsec_input_t *inputs, uint8_t *num_bsec_inputs,
+    int32_t bsec_process_data);
+extern void bme680_bsec_process_data(bsec_input_t *bsec_inputs, uint8_t num_bsec_inputs, output_ready_fct output_ready);
+
+/*!
+ * @brief       custom version of bsec_iot_loop (defined in bsec_integration.c).
+
+                it has no while loop, so it can be called to run only once, but it is up to caller to define when it must be executed next.
+                the sleep function pointer can be used to provide caller with the amount of time that needs to pass before next execution
+ *
+ * @param[in]   get_timestamp_us    pointer to the system specific timestamp derivation function
+ * @param[in]   output_ready        pointer to the function processing obtained BSEC outputs
+ * @param[in]   state_save          pointer to the system-specific state save function
+ * @param[in]   save_intvl          interval at which BSEC state should be saved (in samples)
+ *
+ * @return      none
+ */
+static void bsec_iot_custom_loop(get_timestamp_us_fct get_timestamp_us, output_ready_fct output_ready,
+                    state_save_fct state_save, uint32_t save_intvl)
+{
+    /* Timestamp variables */
+    int64_t time_stamp = 0;
+    int64_t time_stamp_interval_ms = 0;
+
+    /* Allocate enough memory for up to BSEC_MAX_PHYSICAL_SENSOR physical inputs*/
+    bsec_input_t bsec_inputs[BSEC_MAX_PHYSICAL_SENSOR];
+
+    /* Number of inputs to BSEC */
+    uint8_t num_bsec_inputs = 0;
+
+    /* BSEC sensor settings struct */
+    bsec_bme_settings_t sensor_settings;
+
+    /* Save state variables */
+    uint8_t bsec_state[BSEC_MAX_STATE_BLOB_SIZE];
+    uint8_t work_buffer[BSEC_MAX_WORKBUFFER_SIZE];
+    uint32_t bsec_state_len = 0;
+
+    static uint32_t n_samples = 0;
+
+    bsec_library_return_t bsec_status = BSEC_OK;
+
+    {
+        /* get the timestamp in nanoseconds before calling bsec_sensor_control() */
+        time_stamp = get_timestamp_us() * 1000;
+
+        /* Retrieve sensor settings to be used in this time instant by calling bsec_sensor_control */
+        bsec_sensor_control(time_stamp, &sensor_settings);
+
+        /* Trigger a measurement if necessary */
+        bme680_bsec_trigger_measurement(&sensor_settings, azx_sleep_ms);
+
+        /* Read data from last measurement */
+        num_bsec_inputs = 0;
+        bme680_bsec_read_data(time_stamp, bsec_inputs, &num_bsec_inputs, sensor_settings.process_data);
+
+        /* Time to invoke BSEC to perform the actual processing */
+        bme680_bsec_process_data(bsec_inputs, num_bsec_inputs, output_ready);
+
+        /* Increment sample counter */
+        n_samples++;
+
+        /* Retrieve and store state if the passed save_intvl */
+        if (n_samples >= save_intvl)
+        {
+            bsec_status = bsec_get_state(0, bsec_state, sizeof(bsec_state), work_buffer, sizeof(work_buffer), &bsec_state_len);
+            if (bsec_status == BSEC_OK)
+            {
+                state_save(bsec_state, bsec_state_len);
+            }
+            n_samples = 0;
+        }
 
 
-
-
-
-
+        /* Compute how long we can sleep until we need to call bsec_sensor_control() next */
+        /* Time_stamp is converted from microseconds to nanoseconds first and then the difference to milliseconds */
+        time_stamp_interval_ms = (sensor_settings.next_call - get_timestamp_us() * 1000) / 1000000;
+        if (time_stamp_interval_ms > 0)
+        {
+            bsec_sleep((uint32_t)time_stamp_interval_ms);
+        }
+    }
+}
+#endif
 
 
 /*-----------------------------------------------------------------------------------------------*/
+int run_sensors_loop(int reset)
+{
+  /* BHY Variables*/
+  uint8_t                       *fifoptr           = NULL;
+  static uint16_t               bytes_left_in_fifo = 0;
+  static uint16_t               bytes_remaining    = 0;
+  static uint16_t               bytes_read         = 0;
+
+  UINT64 kick_ts = 0;
+
+  bhy_data_generic_t            fifo_packet;
+  bhy_data_type_t               packet_type;
+  BHY_RETURN_FUNCTION_TYPE      result;
+  uint8_t                       reset_BHI = reset;
+   /* continuously read and parse the fifo after the push of the button*/
+  AZX_LOG_DEBUG("Starting the loop...\r\n");
+  while(1)
+  {
+
+      if(get_u64_uptime_ms() > kick_ts)
+      {
+        kick_ts = get_u64_uptime_ms() + wd_kick_delay_ms;
+        AZX_LOG_INFO("WD kick!\r\n");
+        m2mb_wDog_kick(h_wDog, m2mb_os_taskGetId());
+      }
+      if(reset_BHI == DO_RESET)
+      {
+        AZX_LOG_INFO("Reset parameters and BHI160 FIFO\r\n");
+        reset_BHI = DO_NOT_RESET;
+        memset(fifo, 0, FIFO_SIZE);
+        bytes_left_in_fifo = 0;
+        bytes_remaining    = 0;
+        bytes_read         = 0;
+
+        result =  bhy_set_host_interface_control(BHY_HOST_ABORT_TRANSFER,1);
+        if(result != BHY_SUCCESS)
+        {
+          AZX_LOG_WARN("Abort transfer result: %d\r\n", result);
+        }
+      }
+      /* wait until the interrupt fires */
+      /* unless we already know there are bytes remaining in the fifo */
+      while( !read_gpio()  && !bytes_remaining )
+      {
+        azx_sleep_ms( 10 );
+      }
+      bhy_read_fifo( fifo + bytes_left_in_fifo, FIFO_SIZE - bytes_left_in_fifo, &bytes_read,
+                    &bytes_remaining );
+
+
+      bytes_read         += bytes_left_in_fifo;
+      fifoptr             = fifo;
+      packet_type        = BHY_DATA_TYPE_PADDING;
+
+      do
+      {
+        /* this function will call callbacks that are registered */
+        result = bhy_parse_next_fifo_packet( &fifoptr, &bytes_read, &fifo_packet, &packet_type );
+
+        /* prints all the debug packets */
+        if( packet_type == BHY_DATA_TYPE_DEBUG )
+        {
+          bhy_print_debug_packet( &fifo_packet.data_debug, bhy_printf );
+        }
+
+        /* the logic here is that if doing a partial parsing of the fifo, then we should not parse  */
+        /* the last 18 bytes (max length of a packet) so that we don't try to parse an incomplete   */
+        /* packet                                                                                   */
+      }
+      while( ( result == BHY_SUCCESS ) && ( bytes_read > ( bytes_remaining ? MAX_PACKET_LENGTH : 0 ) ) );
+
+      if(result == BHY_OUT_OF_RANGE && bytes_read > FIFO_SIZE )
+      {
+        AZX_LOG_WARN("Out of sync, reset everything\r\n");
+        uint16_t to_be_flushed = bytes_remaining;
+        while(to_be_flushed > 0)
+        {
+          bhy_read_fifo( fifo, FIFO_SIZE, &bytes_read, &bytes_remaining );
+          to_be_flushed -= bytes_read;
+          azx_sleep_ms( 10 );
+        }
+        
+        memset(fifo, 0, FIFO_SIZE);
+        bytes_left_in_fifo = 0;
+        bytes_remaining    = 0;
+        bytes_read         = 0;
+
+        azx_sleep_ms( 10 );
+      }
+
+      bytes_left_in_fifo = 0;
+
+      if( bytes_remaining )
+      {
+        /* shifts the remaining bytes to the beginning of the buffer */
+        while( bytes_left_in_fifo < bytes_read )
+        {
+          fifo[bytes_left_in_fifo++] = *( fifoptr++ );
+        }
+
+      }
+#ifndef BSEC_THREAD
+    if(get_u64_uptime_ms() > bsec_sleep_ms_resume_ts)
+    {
+      bsec_iot_custom_loop( get_timestamp_us, bsec_output_ready, state_save, 10000 );
+    }
+#endif
+
+
+  }
+
+  return BHY_SUCCESS;
+}
+/*-----------------------------------------------------------------------------------------------*/
 int init_sensors( void )
 {
-  /* BHY Variable*/
-   uint8_t                    *fifoptr           = NULL;
-   uint8_t             bytes_left_in_fifo = 0;
-   uint16_t            bytes_remaining    = 0;
-   uint16_t                   bytes_read         = 0;
-
-   bhy_data_generic_t         fifo_packet;
-   bhy_data_type_t            packet_type;
-   BHY_RETURN_FUNCTION_TYPE   result;
-
-
    return_values_init ret;
-   INT32 bsecTaskId;
+
 
   /* the remapping matrix for BHA or BHI here should be configured according to its placement on customer's PCB. */
   /* for details, please check 'Application Notes Axes remapping of BHA250(B)/BHI160(B)' document. */
@@ -534,12 +823,6 @@ int init_sensors( void )
   {
     azx_sleep_ms( 10 );
   }
-
-  /* To get the customized version number in firmware, it is necessary to read Parameter Page 2, index 125 */
-  /* to get this information. This feature is only supported for customized firmware. To get this customized */
-  /* firmware, you need to contact your local FAE of Bosch Sensortec. */
-  //bhy_read_parameter_page(BHY_PAGE_2, PAGE2_CUS_FIRMWARE_VERSION, (uint8_t*)&bhy_cus_version, sizeof(struct cus_version_t));
-  //DEBUG("cus version base:%d major:%d minor:%d\n", bhy_cus_version.base, bhy_cus_version.major, bhy_cus_version.minor);
 
   /* enables the activity recognition and assigns the callback */
   bhy_enable_virtual_sensor( VS_TYPE_ACTIVITY_RECOGNITION, VS_NON_WAKEUP, 1, 0, VS_FLUSH_NONE, 0, 0 );
@@ -593,13 +876,14 @@ int init_sensors( void )
     }
   }
 
-  bsecTaskId = azx_tasks_createTask((char *)"BSEC_LOOP", AZX_TASKS_STACK_XL, 5, AZX_TASKS_MBOX_S, bsec_loop_taskCB);
+#ifdef BSEC_THREAD
+  bsecTaskId = azx_tasks_createTask((char *)"BSEC_LOOP", AZX_TASKS_STACK_XL, 28, AZX_TASKS_MBOX_S, bsec_loop_taskCB);
   if(bsecTaskId <= 0)
   {
     AZX_LOG_CRITICAL("cannot create BSEC task!\r\n");
     return BHY_ERROR;
   }
-
+#endif
 
   write_LED( M2MB_GPIO_HIGH_VALUE );
   azx_sleep_ms( 100 );
@@ -613,56 +897,10 @@ int init_sensors( void )
   AZX_LOG_INFO( "System is now monitoring activity for tampering and rotation changes, move the board to update data.\r\n" );
 
   //START BSEC task
+#ifdef BSEC_THREAD
   azx_tasks_sendMessageToTask(bsecTaskId, 0, 0, 0);
+#endif
 
-  /* continuously read and parse the fifo after the push of the button*/
-  while(1)
-  {
-    /* wait until the interrupt fires */
-      /* unless we already know there are bytes remaining in the fifo */
-
-      while( !read_gpio()  && !bytes_remaining )
-      {
-        azx_sleep_ms( 10 );
-      }
-
-      bhy_read_fifo( fifo + bytes_left_in_fifo, FIFO_SIZE - bytes_left_in_fifo, &bytes_read,
-          &bytes_remaining );
-      bytes_read         += bytes_left_in_fifo;
-      fifoptr             = fifo;
-      packet_type        = BHY_DATA_TYPE_PADDING;
-
-
-      do
-      {
-        /* this function will call callbacks that are registered */
-        result = bhy_parse_next_fifo_packet( &fifoptr, &bytes_read, &fifo_packet, &packet_type );
-
-        /* prints all the debug packets */
-        if( packet_type == BHY_DATA_TYPE_DEBUG )
-        {
-          bhy_print_debug_packet( &fifo_packet.data_debug, bhy_printf );
-        }
-
-        /* the logic here is that if doing a partial parsing of the fifo, then we should not parse        */
-        /* the last 18 bytes (max length of a packet) so that we don't try to parse an incomplete   */
-        /* packet                                                                                                            */
-      }
-      while( ( result == BHY_SUCCESS ) && ( bytes_read > ( bytes_remaining ? MAX_PACKET_LENGTH : 0 ) ) );
-
-      bytes_left_in_fifo = 0;
-
-      if( bytes_remaining )
-      {
-        /* shifts the remaining bytes to the beginning of the buffer */
-        while( bytes_left_in_fifo < bytes_read )
-        {
-          fifo[bytes_left_in_fifo++] = *( fifoptr++ );
-        }
-      }
-
-
-  }
   return BHY_SUCCESS;
 }
 
@@ -714,13 +952,83 @@ int read_sensor(BSENS_SENSOR_ID_E id, void **data)
  */
 void trace_log( const char *fmt, ... )
 {
-  char log_buffer[256];
+  char log_buffer[512];
   va_list arg;
   va_start( arg, fmt );
   vsnprintf( log_buffer, sizeof( log_buffer ), fmt, arg );
   va_end( arg );
-  AZX_LOG_INFO( "%s", log_buffer );
+  AZX_LOG_INFO( "###%s", log_buffer );
 }
+
+
+/*-----------------------------------------------------------------------------------------------*/
+void WDog_Init(M2MB_OS_TASK_HANDLE TaskWD_H)
+{
+M2MB_RESULT_E res;
+MEM_W time_ms;
+
+
+	AZX_LOG_INFO("\r\nInit WatchDog\r\n");
+	res = m2mb_wDog_init(&h_wDog, WDcallback, TaskWD_H);
+	if (res == M2MB_RESULT_SUCCESS)
+	{
+		AZX_LOG_INFO("m2mb_wDog_init OK\r\n");
+	}
+	else
+	{
+		AZX_LOG_ERROR("m2mb_wDog_init Fail, error: %d\r\n", res);
+		return;
+	}
+
+	/* Verifying tick duration */
+	res = m2mb_wDog_getItem(h_wDog, M2MB_WDOG_SELECT_CMD_TICK_DURATION_MS, 0, &time_ms);
+	if (res == M2MB_RESULT_SUCCESS)
+	{
+		wd_tick_s = time_ms/1000;
+		AZX_LOG_INFO("Tick duration: %ds\r\n", wd_tick_s);
+	}
+	else
+	{
+		AZX_LOG_ERROR("Get tick duration Fail, error: %d\r\n", res);
+	}
+
+  wd_kick_delay_ms = (WAKE_UP_TICKS - 1 ) * wd_tick_s * 1000;
+
+	AZX_LOG_INFO("Adding Task under WD control with inactivity timeout of %ds\r\n", WD_TOUT_COUNT * WAKE_UP_TICKS * wd_tick_s);
+	/* wdTimeout (inactivity timeout of the task) is set to WD_TOUT_COUNT (3 in this case).
+	 * This counter is decreased every time a control is done and no kick have been received. Control is done every WAKE_UP_TICKS.
+	 * When the counter reaches 0 a further control is done and if it's still 0 then callback is called,
+	 * so task inactivity timeout will be more or less  WD_TOUT_COUNT * WAKE_UP_TICKS * 1s
+	*/
+	res = m2mb_wDog_addTask(h_wDog, TaskWD_H, WD_TOUT_COUNT);
+
+	if (res == M2MB_RESULT_SUCCESS)
+	{
+		AZX_LOG_INFO("m2mb_wDog_addTask OK\r\n");
+	}
+	else
+	{
+		AZX_LOG_ERROR("m2mb_wDog_addTask Fail\r\n");
+	}
+
+	AZX_LOG_INFO("Enabling the WatchDog\r\n");
+	/* WAKE_UP_TICKS defines the number of ticks of every control, by default the tick is every 1s
+	 * CTRL_TICKS_TO_REBOOT this defines the number of controls the wd does before rebooting the app if no kick are received (or no action is done in watchdog callback )
+	 * so timeout to reboot is  WAKE_UP_TICKS * CTRL_TICKS_TO_REBOOT * 1s
+	 */
+	res = m2mb_wDog_enable(h_wDog, WAKE_UP_TICKS, CTRL_TICKS_TO_REBOOT);
+	if (res == M2MB_RESULT_SUCCESS)
+	{
+		AZX_LOG_INFO("m2mb_wDog_enable OK\r\n");
+	}
+	else
+	{
+		AZX_LOG_ERROR("m2mb_wDog_enable Fail, error: %d\r\n", res);
+	}
+
+}
+
+
 
 /* Global functions =============================================================================*/
 

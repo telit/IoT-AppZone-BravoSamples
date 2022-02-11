@@ -12,7 +12,7 @@
   @description
     Tampering Demo application. Debug prints on MAIN UART
   @version
-    1.0.4
+    1.0.5
   @note
     Start of Appzone: Entry point
     User code entry is in function M2MB_main()
@@ -80,7 +80,7 @@ typedef enum
    Bosch device
 */
 #define INT_GPIO_PIN_NUM 6
-#define LED_INDEX_NUM 2      /* GPIO 10 */
+
 #define SENSOR_AR_TOUT  100  /* 10 = 1 sec */
 
 #ifndef SKIP_LWM2M
@@ -394,7 +394,7 @@ void M2MB_main( int argc, char **argv )
                 VERSION, __DATE__, __TIME__ );
 
   /* Open GPIO */
-  if( open_LED( LED_INDEX_NUM ) != 0 )
+  if( open_LED( DEFAULT_LED_INDEX ) != 0 )
   {
     AZX_LOG_ERROR( "Cannot open gpio channel.\r\n" );
     return;

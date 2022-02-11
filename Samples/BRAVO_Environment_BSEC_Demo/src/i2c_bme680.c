@@ -13,7 +13,7 @@
 
   @author WhiteBeard
   @author FabioPi
-  
+
   @date
     2020-02-15
 */
@@ -39,7 +39,11 @@
 /* Local defines ================================================================================*/
 /* Local typedefs ===============================================================================*/
 /* Local statics ================================================================================*/
+#ifndef BRAVO_REV_B
 static INT32 i2c_fd = -1;
+#endif
+
+
 /* Local function prototypes ====================================================================*/
 /* Static functions =============================================================================*/
 /* Global functions =============================================================================*/
@@ -79,16 +83,6 @@ int bme680_openI2C( uint8_t dev_id )
   INT32 res;
   CHAR dev_ID[64];
   M2MB_I2C_CFG_T config;
-  M2MB_OS_SEM_ATTR_HANDLE semAttrHandle;
-
-  if (NULL == I2C_CSSemHandle)
-  {
-    m2mb_os_sem_setAttrItem(&semAttrHandle,
-        CMDS_ARGS(M2MB_OS_SEM_SEL_CMD_CREATE_ATTR, NULL,
-            M2MB_OS_SEM_SEL_CMD_COUNT, 1 /*CS*/,
-            M2MB_OS_SEM_SEL_CMD_TYPE, M2MB_OS_SEM_GEN));
-    m2mb_os_sem_init( &I2C_CSSemHandle, &semAttrHandle );
-  }
 
   /**************
       Configuring the IIC device.
@@ -129,6 +123,7 @@ int8_t bme680_i2c_write( uint8_t dev_id, uint8_t reg_addr, uint8_t *data, uint16
   AZX_LOG_TRACE( "bme680_i2c_write\r\n" );
   AZX_LOG_TRACE( "bme680_i2c_write LEN = %d\r\n", len );
 
+
   if( i2c_fd == -1 )
   {
     i2c_res = bme680_openI2C(dev_id);
@@ -138,6 +133,8 @@ int8_t bme680_i2c_write( uint8_t dev_id, uint8_t reg_addr, uint8_t *data, uint16
       return 1;
     }
   }
+
+
 
   i2c_res = m2mb_i2c_ioctl( i2c_fd, M2MB_I2C_IOCTL_GET_CFG, ( void * )&config );
 
@@ -153,15 +150,16 @@ int8_t bme680_i2c_write( uint8_t dev_id, uint8_t reg_addr, uint8_t *data, uint16
   if( i2c_res != 0 )
   {
     AZX_LOG_ERROR( "cannot set I2C channel configuration\r\n" );
+
     return 1;
   }
 
   AZX_LOG_TRACE( "Configuring I2C Registers - Writing %d bytes into 0x%02X register...\r\n", len,
                  reg_addr );
 
-  m2mb_os_sem_get(I2C_CSSemHandle, M2MB_OS_WAIT_FOREVER);
+
   i2c_res = m2mb_i2c_write( i2c_fd, data, len );
-  m2mb_os_sem_put(I2C_CSSemHandle);
+  
 
   if( i2c_res != len )
   {
@@ -209,13 +207,15 @@ int8_t bme680_i2c_read_16( uint8_t addr, uint8_t reg, uint8_t *p_buf, uint16_t s
     {
       size = size - tmpsize;
       reg = reg + tmpsize;
-      
+
       AZX_LOG_TRACE( "Reading Success.\r\n" );
       AZX_LOG_TRACE( "i2c->" );
+
       for( int i = 0; i < i2c_res; i++ )
       {
         AZX_LOG_TRACE( " %02x", p_buf[i] );
       }
+
       AZX_LOG_TRACE( "\r\n" );
 
       p_buf = p_buf + tmpsize;
@@ -238,6 +238,7 @@ int8_t bme680_i2c_read( uint8_t dev_id, uint8_t reg_addr, uint8_t *data, uint16_
 
   INT32 i2c_res;
   M2MB_I2C_CFG_T config;
+
 
   AZX_LOG_TRACE( "bme680_i2c_read\r\n" );
   AZX_LOG_TRACE( "bme680_i2c_read LEN = %d\r\n", len );
@@ -262,7 +263,7 @@ int8_t bme680_i2c_read( uint8_t dev_id, uint8_t reg_addr, uint8_t *data, uint16_
     return 1;
   }
 
-  m2mb_os_sem_get(I2C_CSSemHandle, M2MB_OS_WAIT_FOREVER);
+
   if( reg_addr == 0 ) // if read FIFO double buffer
   {
     for( ; len > 50; )
@@ -278,8 +279,29 @@ int8_t bme680_i2c_read( uint8_t dev_id, uint8_t reg_addr, uint8_t *data, uint16_
   {
     i2c_res = bme680_i2c_read_16( dev_id, reg_addr, data, len, &config );
   }
-  m2mb_os_sem_put(I2C_CSSemHandle);
+
   return i2c_res;
+}
+
+
+int bme680_close_I2C( void )
+{
+  INT32 res;
+
+  AZX_LOG_INFO( "\r\nClosing the Bosch BME680 I2C channel...\r\n" );
+
+  res = m2mb_i2c_close( i2c_fd);
+
+  if( -1 == res )
+  {
+    AZX_LOG_ERROR( "cannot close I2C channel!\r\n" );
+    return 1;
+  }
+  else
+  {
+    i2c_fd = -1;
+    return 0;
+  }
 }
 
 #endif

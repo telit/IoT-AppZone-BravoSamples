@@ -54,4 +54,9 @@ int8_t bme680_i2c_read( uint8_t dev_id, uint8_t reg_addr, uint8_t *data, uint16_
 int8_t bme680_i2c_write( uint8_t dev_id, uint8_t reg_addr, uint8_t *data, uint16_t len );
 
 
+/**
+  @brief        Closes I2C bme680device channel
+
+*/
+int bme680_close_I2C( void );
 #endif /* SRC_I2C_BME680_H_ */

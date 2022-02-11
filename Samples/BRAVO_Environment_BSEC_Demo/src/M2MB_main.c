@@ -12,7 +12,7 @@
   @description
     Environment Demo application. Debug prints on MAIN UART
   @version
-    1.0.4
+    1.0.6
   @note
     Start of Appzone: Entry point
     User code entry is in function M2MB_main()
@@ -68,8 +68,6 @@
    Bosch device
 */
 #define INT_GPIO_PIN_NUM 6
-#define LED_INDEX_NUM 2         /* GPIO 10 */
-
 
 #define BME680_W_SELF_TEST_FAILED 3
 
@@ -276,7 +274,7 @@ void M2MB_main( int argc, char **argv )
   LWM2M_OBJ_REG_T obj = {ENVIRONMENT_OBJ_ID, 1, instances };
 #endif
   /* Open GPIO */
-  if( open_LED( LED_INDEX_NUM ) != 0 )
+  if( open_LED( DEFAULT_LED_INDEX ) != 0 )
   {
     AZX_LOG_ERROR( "Cannot open gpio channel.\r\n" );
     return;
@@ -292,7 +290,7 @@ void M2MB_main( int argc, char **argv )
     if( 0 != copy_xml_file( XML_NAME ) )
     {
       AZX_LOG_CRITICAL( "Failed copying file!\r\n" );
-      
+
       for( int i = 0; i < 10; i++ )
       {
         write_LED( M2MB_GPIO_HIGH_VALUE );
@@ -362,7 +360,7 @@ void M2MB_main( int argc, char **argv )
       return;// (int)ret.bsec_status;
     }
   }
-  
+
   write_LED( M2MB_GPIO_HIGH_VALUE );
   azx_sleep_ms( 100 );
   write_LED( M2MB_GPIO_LOW_VALUE );
@@ -371,7 +369,7 @@ void M2MB_main( int argc, char **argv )
   azx_sleep_ms( 100 );
   write_LED( M2MB_GPIO_LOW_VALUE );
   azx_sleep_ms( 100 );
-  
+
   /* Call to endless loop function which reads and processes data based on sensor settings */
   /* State is saved every 10.000 samples, which means every 10.000 * 3 secs = 500 minutes  */
   bsec_iot_loop( azx_sleep_ms, get_timestamp_us, output_ready, state_save, 10000 );

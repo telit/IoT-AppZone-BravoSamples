@@ -30,6 +30,9 @@
 #define YELLOW_LED_GPIO 9
 #define GREEN_LED_GPIO	10
 
+#define DEFAULT_LED_INDEX 2 /* GPIO 10 */
+
+
 /* Global typedefs ==============================================================================*/
 
 /* Global functions =============================================================================*/

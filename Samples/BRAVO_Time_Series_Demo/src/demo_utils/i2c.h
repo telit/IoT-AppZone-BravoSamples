@@ -30,10 +30,9 @@
 #define BHY_I2C_160B_ADDR1 (UINT16) 0x28
 
 
-extern M2MB_OS_SEM_HANDLE I2C_CSSemHandle;
-
 /* Global typedefs ==============================================================================*/
 /* Global functions =============================================================================*/
+
 
 /**
   @brief        Opens I2C device at BHI160B default address
@@ -66,5 +65,10 @@ int8_t sensor_i2c_write( uint8_t addr, uint8_t reg, uint8_t *p_buf, uint16_t siz
 */
 int8_t sensor_i2c_read( uint8_t addr, uint8_t reg, uint8_t *p_buf, uint16_t size );
 
+/**
+  @brief        Closes I2C device channel
+
+*/
+int close_I2C( void );
 
 #endif /* SRC_I2C_H_ */
