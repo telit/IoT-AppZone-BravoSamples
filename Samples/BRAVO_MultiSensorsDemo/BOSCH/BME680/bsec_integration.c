@@ -74,11 +74,12 @@
 /* header files */
 /**********************************************************************************************************************/
 
-#include "../BME680/bsec_integration.h"
+
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include "../BME680/bsec_integration.h"
 #include <app_cfg.h>
 
 /**********************************************************************************************************************/
@@ -163,9 +164,9 @@ return_values_init bsec_iot_init(float sample_rate, float temperature_offset, bm
     return_values_init ret = {BME680_OK, BSEC_OK};
     //bsec_library_return_t bsec_status = BSEC_OK;
     
-    uint8_t bsec_state[BSEC_MAX_PROPERTY_BLOB_SIZE] = {0};
+    uint8_t bsec_state[BSEC_MAX_STATE_BLOB_SIZE] = {0};
     uint8_t bsec_config[BSEC_MAX_PROPERTY_BLOB_SIZE] = {0};
-    uint8_t work_buffer[BSEC_MAX_PROPERTY_BLOB_SIZE] = {0};
+    uint8_t work_buffer[BSEC_MAX_WORKBUFFER_SIZE] = {0};
     int bsec_state_len, bsec_config_len;
     
     /* Fixed I2C configuration */

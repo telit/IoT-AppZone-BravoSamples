@@ -43,31 +43,19 @@
 /* Local statics ================================================================================*/
 static INT32 i2c_fd = -1;
 
-M2MB_OS_SEM_HANDLE I2C_CSSemHandle = NULL;
-
 /* Local function prototypes ====================================================================*/
 /* Static functions =============================================================================*/
 /* Global functions =============================================================================*/
 
 /*-----------------------------------------------------------------------------------------------*/
+
+
+
 int open_I2C( void )
 {
   INT32 res;
   CHAR dev_ID[64];
   M2MB_I2C_CFG_T config;
-
-  M2MB_OS_SEM_ATTR_HANDLE semAttrHandle;
-
-  if (NULL == I2C_CSSemHandle)
-  {
-    m2mb_os_sem_setAttrItem(&semAttrHandle,
-        CMDS_ARGS(M2MB_OS_SEM_SEL_CMD_CREATE_ATTR, NULL,
-            M2MB_OS_SEM_SEL_CMD_COUNT, 1 /*CS*/,
-            M2MB_OS_SEM_SEL_CMD_TYPE, M2MB_OS_SEM_GEN));
-    m2mb_os_sem_init( &I2C_CSSemHandle, &semAttrHandle );
-  }
-
-
 
 
   /**************
@@ -85,7 +73,10 @@ int open_I2C( void )
     AZX_LOG_ERROR( "cannot open I2C channel!\r\n" );
     return 1;
   }
-
+  else
+  {
+    AZX_LOG_DEBUG("i2d_fd: %d\r\n", i2c_fd);
+  }
   config.sclPin = I2C_SCL;
   config.sdaPin = I2C_SDA;
   config.registerId = 0x00; //dummy register
@@ -112,11 +103,12 @@ int8_t sensor_i2c_write( uint8_t addr, uint8_t reg, uint8_t *p_buf, uint16_t siz
     return 1;
   }
 
+
   i2c_res = m2mb_i2c_ioctl( i2c_fd, M2MB_I2C_IOCTL_GET_CFG, ( void * )&config );
 
   if( i2c_res != 0 )
   {
-    AZX_LOG_ERROR( "cannot get I2C channel configuration\r\n" );
+    AZX_LOG_ERROR( "cannot get I2C channel configuration on %d\r\n", i2c_fd );
     return 1;
   }
 
@@ -125,18 +117,18 @@ int8_t sensor_i2c_write( uint8_t addr, uint8_t reg, uint8_t *p_buf, uint16_t siz
 
   if( i2c_res != 0 )
   {
-    AZX_LOG_ERROR( "cannot set I2C channel configuration\r\n" );
+    AZX_LOG_ERROR( "cannot set I2C channel configuration on %d\r\n", i2c_fd );
     return 1;
   }
 
   AZX_LOG_TRACE( "Configuring I2C Registers - Writing %d bytes into 0x%02X register...\r\n", size,
                  reg );
-  m2mb_os_sem_get(I2C_CSSemHandle, M2MB_OS_WAIT_FOREVER);
+
   i2c_res = m2mb_i2c_write( i2c_fd, p_buf, size );
-  m2mb_os_sem_put(I2C_CSSemHandle);
+
   if( i2c_res != size )
   {
-    AZX_LOG_ERROR( "cannot write data! error: %d\r\n", i2c_res );
+    AZX_LOG_ERROR( "cannot write data on %d! error: %d\r\n", i2c_fd, i2c_res );
     return 1;
   }
   else
@@ -159,7 +151,7 @@ int8_t sensor_i2c_read_16( uint8_t addr, uint8_t reg, uint8_t *p_buf, uint16_t s
 
     if( i2c_res != 0 )
     {
-      AZX_LOG_ERROR( "Cannot set I2C channel configuration\r\n" );
+      AZX_LOG_ERROR( "Cannot set I2C channel configuration on %d\r\n", i2c_fd );
       return 1;
     }
 
@@ -173,14 +165,14 @@ int8_t sensor_i2c_read_16( uint8_t addr, uint8_t reg, uint8_t *p_buf, uint16_t s
     {
       tmpsize = size;
     }
-	
+
     i2c_res = m2mb_i2c_read( i2c_fd, p_buf, tmpsize ); //reading 16 bytes max at a time
 
     if( i2c_res == tmpsize )
     {
       size = size - tmpsize;
       reg = reg + tmpsize;
-      
+
       AZX_LOG_TRACE( "Reading Success.\r\n" );
       AZX_LOG_TRACE( "i2c->" );
       for( int i = 0; i < i2c_res; i++ )
@@ -208,16 +200,21 @@ int8_t sensor_i2c_read( uint8_t addr, uint8_t reg, uint8_t *p_buf, uint16_t size
 {
   INT32 i2c_res;
   M2MB_I2C_CFG_T config;
+  if( i2c_fd == -1 )
+  {
+    return 1;
+  }
+
   AZX_LOG_TRACE( "I2C read register..." );
+
   i2c_res = m2mb_i2c_ioctl( i2c_fd, M2MB_I2C_IOCTL_GET_CFG, ( void * )&config );
 
   if( i2c_res != 0 )
   {
-    AZX_LOG_ERROR( "Cannot get I2C channel configuration\r\n" );
+    AZX_LOG_ERROR( "Cannot get I2C channel configuration on %d\r\n", i2c_fd );
     return 1;
   }
 
-  m2mb_os_sem_get(I2C_CSSemHandle, M2MB_OS_WAIT_FOREVER);
   if( reg == 0 ) // if read FIFO double buffer
   {
     for( ; size > 50; )
@@ -233,7 +230,28 @@ int8_t sensor_i2c_read( uint8_t addr, uint8_t reg, uint8_t *p_buf, uint16_t size
   {
     i2c_res = sensor_i2c_read_16( addr, reg, p_buf, size, &config );
   }
-  m2mb_os_sem_put(I2C_CSSemHandle);
+  
 
   return i2c_res;
+}
+
+
+int close_I2C( void )
+{
+  INT32 res;
+
+  AZX_LOG_INFO( "\r\nClosing the Bosch BHI160 I2C channel...\r\n" );
+
+  res = m2mb_i2c_close( i2c_fd);
+
+  if( -1 == res )
+  {
+    AZX_LOG_ERROR( "cannot close I2C channel!\r\n" );
+    return 1;
+  }
+  else
+  {
+    i2c_fd = -1;
+    return 0;
+  }
 }

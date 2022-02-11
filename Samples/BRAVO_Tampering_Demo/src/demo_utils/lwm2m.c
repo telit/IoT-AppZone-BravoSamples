@@ -1056,43 +1056,86 @@ void update_tamper_LWM2MObject(int value)
 /*-----------------------------------------------------------------------------------------------*/
 void update_environment_LWM2MObject(float _t, float _p, float _rh, INT16 _iaq) {
   M2MB_OS_RESULT_E osRes;
+  INT32 iaq = _iaq;
+
   m2mb_os_sem_get(lwm2m_CSSemHandle, M2MB_OS_WAIT_FOREVER);
+
   M2MB_RESULT_E retVal = m2mb_lwm2m_set(lwm2mHandle, &_obj_environment_uri_t,
       &_t, sizeof(float));
-  azx_sleep_ms(10);
+  if (retVal != M2MB_RESULT_SUCCESS)
+  {
+    AZX_LOG_ERROR("m2mb_lwm2m_set returned error %d\r\n", retVal);
+    goto end;
+  }
+  else
+  {
+	  osRes = m2mb_os_ev_get(eventsHandleLwm2m, EV_LWM2M_SET_RES_BIT,
+	      M2MB_OS_EV_GET_ANY_AND_CLEAR, NULL, M2MB_OS_MS2TICKS(10000));
+	  if (osRes != M2MB_OS_SUCCESS)
+	  {
+	    AZX_LOG_ERROR("LWM2M write failure\r\n");
+	    goto end;
+	  }
+  }
+
   retVal = m2mb_lwm2m_set(lwm2mHandle, &_obj_environment_uri_p, &_p,
       sizeof(float));
-  azx_sleep_ms(10);
   if (retVal != M2MB_RESULT_SUCCESS) 
   {
     AZX_LOG_ERROR("m2mb_lwm2m_set returned error %d\r\n", retVal);
+    goto end;
   }
+  else
+  {
+	  osRes = m2mb_os_ev_get(eventsHandleLwm2m, EV_LWM2M_SET_RES_BIT,
+	      M2MB_OS_EV_GET_ANY_AND_CLEAR, NULL, M2MB_OS_MS2TICKS(10000));
+	  if (osRes != M2MB_OS_SUCCESS)
+	  {
+	    AZX_LOG_ERROR("LWM2M write failure\r\n");
+	    goto end;
+	  }
+  }
+
   retVal = m2mb_lwm2m_set(lwm2mHandle, &_obj_environment_uri_h, &_rh,
       sizeof(float));
-  azx_sleep_ms(10);
   if (retVal != M2MB_RESULT_SUCCESS) 
   {
     AZX_LOG_ERROR("m2mb_lwm2m_set returned error %d\r\n", retVal);
+    goto end;
   }
-  retVal = m2mb_lwm2m_set(lwm2mHandle, &_obj_environment_uri_iaq, &_iaq,
-      sizeof(INT16));
+  else
+  {
+	  osRes = m2mb_os_ev_get(eventsHandleLwm2m, EV_LWM2M_SET_RES_BIT,
+	      M2MB_OS_EV_GET_ANY_AND_CLEAR, NULL, M2MB_OS_MS2TICKS(10000));
+	  if (osRes != M2MB_OS_SUCCESS)
+	  {
+	    AZX_LOG_ERROR("LWM2M write failure\r\n");
+	    goto end;
+	  }
+  }
+
+  retVal = m2mb_lwm2m_set(lwm2mHandle, &_obj_environment_uri_iaq, &iaq,
+      sizeof(INT32));
   if (retVal != M2MB_RESULT_SUCCESS) 
   {
     AZX_LOG_ERROR("m2mb_lwm2m_set returned error %d\r\n", retVal);
+    goto end;
+  }
+  else
+  {
+	  osRes = m2mb_os_ev_get(eventsHandleLwm2m, EV_LWM2M_SET_RES_BIT,
+	      M2MB_OS_EV_GET_ANY_AND_CLEAR, NULL, M2MB_OS_MS2TICKS(10000));
+	  if (osRes != M2MB_OS_SUCCESS)
+	  {
+	    AZX_LOG_ERROR("LWM2M write failure\r\n");
+	    goto end;
+	  }
   }
 
-  osRes = m2mb_os_ev_get(eventsHandleLwm2m, EV_LWM2M_SET_RES_BIT,
-      M2MB_OS_EV_GET_ANY_AND_CLEAR, NULL, M2MB_OS_MS2TICKS(10000));
-  if (osRes != M2MB_OS_SUCCESS) {
-    AZX_LOG_ERROR("LWM2M write failure\r\n");
-  }
 
+end:
   m2mb_os_sem_put(lwm2m_CSSemHandle);
 
-  if (retVal != M2MB_RESULT_SUCCESS) {
-    AZX_LOG_ERROR("m2mb_lwm2m_set returned error %d\r\n", retVal);
-    return;
-  }
 }
 
 /*-----------------------------------------------------------------------------------------------*/

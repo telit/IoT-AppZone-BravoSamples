@@ -176,7 +176,7 @@ M2MB_GPIO_VALUE_E read_gpio( void )
 /*-----------------------------------------------------------------------------------------------*/
 void write_LED( M2MB_GPIO_VALUE_E value )
 {
-  m2mb_gpio_write( led_fd[0], value );
+  m2mb_gpio_write( led_fd[DEFAULT_LED_INDEX], value );
 }
 
 /*-----------------------------------------------------------------------------------------------*/

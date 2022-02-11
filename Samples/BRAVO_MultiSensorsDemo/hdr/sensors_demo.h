@@ -63,7 +63,7 @@
 #define MAX_PACKET_LENGTH              18
 #define TICKS_IN_ONE_SECOND            32000.0F
 
-#define ROTATION_VECTOR_SAMPLE_RATE    10 /* Hz */
+#define ROTATION_VECTOR_SAMPLE_RATE    5  /* Hz */
 
 
 /*BME*/
@@ -85,12 +85,20 @@
 #define HIGH_TEMP   350
 
 
+#define TASK_INIT 0
+#define TASK_LOOP 1
+#define TASK_REINIT 2
+
+#define DO_NOT_RESET 0
+#define DO_RESET 1
+
 /* Global typedefs ==============================================================================*/
 typedef enum
 {
   BSENS_SENSOR_ENVIRONM_ID = 1,
   BSENS_SENSOR_3D_VECT_ID = 2,
-  BSENS_SENSOR_TAMPER_ID = 3
+  BSENS_SENSOR_TAMPER_ID = 3,
+  BSENS_MAX_ID
 } BSENS_SENSOR_ID_E;
 
 
@@ -141,9 +149,16 @@ typedef enum
 
 /* Global functions =============================================================================*/
 /**
-   @brief This function is used to run bhy hub
+   @brief This function is used to initialize bhy hub
 */
 int init_sensors( void );
+/**
+   @brief This function is used to run bhy hub loop
+*/
+int run_sensors_loop(int reset);
+
+
 int read_sensor(BSENS_SENSOR_ID_E id, void **data);
 
+void WDog_Init(M2MB_OS_TASK_HANDLE TaskWD_H);
 #endif /* HDR_SENSORS_DEMO_H_ */
