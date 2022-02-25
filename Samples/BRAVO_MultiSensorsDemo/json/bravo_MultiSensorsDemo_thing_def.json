@@ -1,1 +1,48 @@
-[{"key":"bravo_environmental_thingdef","name":"Bravo Board - EnvironmentalDemo thing definition","version":4,"autoDefProps":false,"autoDefAttrs":false,"properties":{"prop_humidity":{"name":"Humidity","unit":"%RH","calcAggregates":true,"scale":"$(value)","deDuplicate":false,"searchable":false},"prop_iaq":{"name":"IAQ","calcAggregates":true,"scale":"$(value)","deDuplicate":false,"searchable":false},"prop_pressure":{"name":"Pressure","unit":"mbar","calcAggregates":true,"scale":"$(value)","deDuplicate":false,"searchable":false},"prop_temp":{"name":"Temp","unit":"\u00b0C","calcAggregates":true,"scale":"$(value)","deDuplicate":false,"searchable":false}},"tunnelAdHoc":false,"locations":{"noDecode":false,"simpleMode":false}}]
+[
+{
+	"key":"bravo_multisensorsdemo",
+	"name":"Bravo Board - MultiSensorsDemo thing definition",
+	"version":2,
+	"autoDefProps":false,
+	"autoDefAttrs":false,
+	"properties":
+	{
+		"prop_accuracy":{"name":"3D_accuracy","calcAggregates":true,"scale":"$(value)","deDuplicate":false,"searchable":false},
+		"prop_humidity":{"name":"Humidity","unit":"%RH","calcAggregates":true,"scale":"$(value)","deDuplicate":false,"searchable":false},
+		"prop_iaq":{"name":"IAQ","calcAggregates":true,"scale":"$(value)","deDuplicate":false,"searchable":false},
+		"prop_pressure":{"name":"Pressure","unit":"mbar","calcAggregates":true,"scale":"$(value)","deDuplicate":false,"searchable":false},
+		"prop_temp":{"name":"Temp","unit":"\u00b0C","calcAggregates":true,"scale":"$(value)","deDuplicate":false,"searchable":false},
+		"prop_w":{"name":"3D_w","calcAggregates":true,"scale":"$(value)","deDuplicate":false,"searchable":false},
+		"prop_x":{"name":"3D_x","calcAggregates":true,"scale":"$(value)","deDuplicate":false,"searchable":false},
+		"prop_y":{"name":"3D_y","calcAggregates":true,"scale":"$(value)","deDuplicate":false,"searchable":false},
+		"prop_z":{"name":"3D_z","calcAggregates":true,"scale":"$(value)","deDuplicate":false,"searchable":false}
+	},
+	"attributes":
+	{
+		"attr_tamper_state":{"name":"tamper state","searchable":false}},
+	"alarms":
+	{
+		"tamper_state":
+		{
+			"name":"tamper state",
+			"states":
+			[
+				{"name":"STILL","color":"#FFFFFF"},
+				{"name":"WALKING","color":"#160FF7"},
+				{"name":"RUNNING","color":"#05F2FA"},
+				{"name":"ON BICICLE","color":"#08FC59"},
+				{"name":"IN VEHICLE","color":"#F2FA08"},
+				{"name":"TILTING","color":"#F79A0F"},
+				{"name":"TAMPERING","color":"#F70F0F"}
+			],
+			"searchable":false
+		}
+	},
+	"tunnelAdHoc":false,
+	"locations":
+	{
+		"noDecode":false,
+		"simpleMode":false
+	}
+}
+]
